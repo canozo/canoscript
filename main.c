@@ -8,7 +8,6 @@
 
 char* read_input();
 
-
 int main() {
     interpreter* interpreter;
     char* input;
@@ -28,7 +27,6 @@ int main() {
     }
     return 0;
 }
-
 
 char* read_input() {
     char* result = NULL;

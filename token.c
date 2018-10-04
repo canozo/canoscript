@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include "token.h"
 
-
 token* new_token(int type, char* value) {
     token* this = malloc(sizeof(token));
 

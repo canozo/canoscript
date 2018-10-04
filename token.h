@@ -8,12 +8,10 @@
 #define T_MULTIPLY 5
 #define T_DIVIDE 6
 
-
 typedef struct token {
     int type;
     char* value;
 } token;
-
 
 token* new_token(int, char*);
 

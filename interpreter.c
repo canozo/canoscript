@@ -4,18 +4,16 @@
 #include <ctype.h>
 #include "interpreter.h"
 
-
 interpreter* new_interpreter(char* text) {
     interpreter* this = malloc(sizeof(interpreter));
 
     this->pos = 0;
     this->text = text;
     this->current_char = text[0];
-    this->current_token = NULL;
+    this->current_token = get_next_token(this);
 
     return this;
 }
-
 
 token* get_next_token(interpreter* this) {
     while (this->current_char != '\0') {
@@ -49,12 +47,12 @@ token* get_next_token(interpreter* this) {
         }
 
         // at this point we have an error
+        printf("syntax error\n");
         exit(-1);
     }
     // at this point, we have reached the end of file
     return new_token(T_EOF, '\0');
 }
-
 
 void advance(interpreter* this) {
     this->pos += 1;
@@ -65,15 +63,14 @@ void advance(interpreter* this) {
     }
 }
 
-
 void eat(interpreter* this, int type) {
     if (this->current_token != NULL && this->current_token->type == type) {
         this->current_token = get_next_token(this);
     } else {
+        printf("error: type %d doesn't match with type %d\n", this->current_token->type, type);
         exit(-1);
     }
 }
-
 
 int number_term(interpreter* this) {
     token* term = this->current_token;
@@ -81,26 +78,37 @@ int number_term(interpreter* this) {
     return strtoint(term->value);
 }
 
-
-int expr(interpreter* this) {
-    this->current_token = get_next_token(this);
-
-    token* tok;
+int mult_expr(interpreter* this) {
     int result = number_term(this);
 
-    while (this->current_token->type == T_PLUS || this->current_token->type == T_MINUS) {
-        if (this->current_token->type == T_PLUS) {
-            eat(this, T_PLUS);
-            result += number_term(this);
+    while (this->current_token->type == T_MULTIPLY || this->current_token->type == T_DIVIDE) {
+        if (this->current_token->type == T_MULTIPLY) {
+            eat(this, T_MULTIPLY);
+            result *= number_term(this);
         } else {
-            eat(this, T_MINUS);
-            result -= number_term(this);
+            eat(this, T_DIVIDE);
+            result /= number_term(this);
         }
     }
 
     return result;
 }
 
+int expr(interpreter* this) {
+    int result = mult_expr(this);
+
+    while (this->current_token->type == T_PLUS || this->current_token->type == T_MINUS) {
+        if (this->current_token->type == T_PLUS) {
+            eat(this, T_PLUS);
+            result += mult_expr(this);
+        } else {
+            eat(this, T_MINUS);
+            result -= mult_expr(this);
+        }
+    }
+
+    return result;
+}
 
 char* get_integer_str(interpreter* this) {
     char* result = NULL;
@@ -123,7 +131,6 @@ char* get_integer_str(interpreter* this) {
 
     return result;
 }
-
 
 int strtoint(char* string) {
     return (int)strtol(string, NULL, 10);
