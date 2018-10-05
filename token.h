@@ -7,6 +7,8 @@
 #define T_MINUS 4
 #define T_MULTIPLY 5
 #define T_DIVIDE 6
+#define T_PARENTH_OPEN 7
+#define T_PARENTH_CLOSE 8
 
 typedef struct token {
     int type;

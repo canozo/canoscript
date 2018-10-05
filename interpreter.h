@@ -4,6 +4,7 @@
 #define ERROR_NULL_TOKEN 1
 #define ERROR_UNEXPECTED_TYPE 2
 #define ERROR_UNEXPECTED_TOKEN 3
+#define ERROR_DIVIDE_BY_ZERO 4
 
 #include "token.h"
 #include "lexer.h"
@@ -20,6 +21,7 @@ interpreter* new_interpreter(char*);
 void delete_interpreter(interpreter*);
 void add_reference(interpreter*, token*);
 void eat(interpreter*, int);
+int parenth_expr(interpreter*);
 int mult_expr(interpreter*);
 int expr(interpreter*);
 

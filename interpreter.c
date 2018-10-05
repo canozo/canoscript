@@ -62,16 +62,40 @@ int number_term(interpreter* this) {
     }
 }
 
+int parenth_expr(interpreter* this) {
+    int result;
+
+    if (this->current_token->type == T_PARENTH_OPEN) {
+        eat(this, T_PARENTH_OPEN);
+        result = expr(this);
+        eat(this, T_PARENTH_CLOSE);
+    } else {
+        result = number_term(this);
+    }
+
+    return result;
+}
+
 int mult_expr(interpreter* this) {
-    int result = number_term(this);
+    int divide_by;
+    int result = parenth_expr(this);
 
     while (this->current_token->type == T_MULTIPLY || this->current_token->type == T_DIVIDE) {
         if (this->current_token->type == T_MULTIPLY) {
             eat(this, T_MULTIPLY);
-            result *= number_term(this);
+            result *= parenth_expr(this);
         } else {
             eat(this, T_DIVIDE);
-            result /= number_term(this);
+            divide_by = parenth_expr(this);
+
+            // check division by 0
+            if (divide_by == 0) {
+                this->error = ERROR_DIVIDE_BY_ZERO;
+                printf("error code %d: can't divide by 0\n", this->error);
+                break;
+            } else {
+                result /= parenth_expr(this);
+            }
         }
 
         if (this->error) {

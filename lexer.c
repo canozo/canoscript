@@ -50,6 +50,16 @@ token* get_next_token(lexer* this) {
             return new_token(T_DIVIDE, "/");
         }
 
+        if (this->current_char == '(') {
+            advance(this);
+            return new_token(T_PARENTH_OPEN, "(");
+        }
+
+        if (this->current_char == ')') {
+            advance(this);
+            return new_token(T_PARENTH_CLOSE, ")");
+        }
+
         // at this point we found a token/character that we don't recognize
         this->error = 1;
         break;
