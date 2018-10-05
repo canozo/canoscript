@@ -21,7 +21,7 @@ int main() {
             interpreter = new_interpreter(input);
             result = expr(interpreter);
             printf("%d\n", result);
-            free(interpreter);
+            delete_interpreter(interpreter);
         }
         free(input);
     }
@@ -44,8 +44,9 @@ char* read_input() {
         len_buffer = strlen(buffer);
         len_result += len_buffer;
 
-        // allocate and concatenate new string
+        // allocate, initialize and concatenate new string
         result = realloc(result, len_result + 1);
+        result[0] = '\0';
         strcat(result, buffer);
     } while (len_buffer == CHUNK-1 && buffer[CHUNK-2] != '\n');
 

@@ -11,3 +11,9 @@ token* new_token(int type, char* value) {
     return this;
 }
 
+void delete_token(token* this) {
+    if (this->type == T_INTEGER) {
+        free(this->value);
+    }
+    free(this);
+}

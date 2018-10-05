@@ -2,21 +2,20 @@
 #define INTERPRETER_H
 
 #include "token.h"
+#include "lexer.h"
 
 typedef struct interpreter {
-    int pos;
-    char* text;
-    char current_char;
     token* current_token;
+    lexer* lexer;
+    token* token_references[2048];
+    int ref_pos;
 } interpreter;
 
 interpreter* new_interpreter(char*);
-token* get_next_token(interpreter*);
-void advance(interpreter*);
+void delete_interpreter(interpreter*);
+void add_reference(interpreter*, token*);
 void eat(interpreter*, int);
 int mult_expr(interpreter*);
 int expr(interpreter*);
-char* get_integer_str(interpreter*);
-int strtoint(char*);
 
 #endif

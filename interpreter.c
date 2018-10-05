@@ -7,65 +7,31 @@
 interpreter* new_interpreter(char* text) {
     interpreter* this = malloc(sizeof(interpreter));
 
-    this->pos = 0;
-    this->text = text;
-    this->current_char = text[0];
-    this->current_token = get_next_token(this);
+    this->ref_pos = 0;
+    this->lexer = new_lexer(text);
+    this->current_token = get_next_token(this->lexer);
+
+    add_reference(this, this->current_token);
 
     return this;
 }
 
-token* get_next_token(interpreter* this) {
-    while (this->current_char != '\0') {
-        if (this->current_char == ' ') {
-            advance(this);
-            continue;
-        }
-
-        if (isdigit(this->current_char)) {
-            return new_token(T_INTEGER, get_integer_str(this));
-        }
-
-        if (this->current_char == '+') {
-            advance(this);
-            return new_token(T_PLUS, "+");
-        }
-
-        if (this->current_char == '-') {
-            advance(this);
-            return new_token(T_MINUS, "-");
-        }
-
-        if (this->current_char == '*') {
-            advance(this);
-            return new_token(T_MULTIPLY, "*");
-        }
-
-        if (this->current_char == '/') {
-            advance(this);
-            return new_token(T_DIVIDE, "/");
-        }
-
-        // at this point we have an error
-        printf("syntax error\n");
-        exit(-1);
+void delete_interpreter(interpreter* this) {
+    for (int i = 0; i < this->ref_pos; i++) {
+        delete_token(this->token_references[i]);
     }
-    // at this point, we have reached the end of file
-    return new_token(T_EOF, '\0');
+    delete_lexer(this->lexer);
+    free(this);
 }
 
-void advance(interpreter* this) {
-    this->pos += 1;
-    if (this->pos > strlen(this->text)) {
-        this->current_char = '\0';
-    } else {
-        this->current_char = this->text[this->pos];
-    }
+void add_reference(interpreter* this, token* token_ref) {
+    this->token_references[this->ref_pos] = token_ref;
+    this->ref_pos += 1;
 }
 
 void eat(interpreter* this, int type) {
     if (this->current_token != NULL && this->current_token->type == type) {
-        this->current_token = get_next_token(this);
+        this->current_token = get_next_token(this->lexer);
     } else {
         printf("error: type %d doesn't match with type %d\n", this->current_token->type, type);
         exit(-1);
@@ -109,30 +75,3 @@ int expr(interpreter* this) {
 
     return result;
 }
-
-char* get_integer_str(interpreter* this) {
-    char* result = NULL;
-    char temp[10];
-    size_t length = 0;
-
-    while (this->current_char != '\0' && isdigit(this->current_char)) {
-        temp[length] = this->current_char;
-        length += 1;
-        advance(this);
-    }
-
-    // null char
-    temp[length] = '\0';
-    length += 1;
-
-    // pass to the char*
-    result = malloc(length);
-    strcat(result, temp);
-
-    return result;
-}
-
-int strtoint(char* string) {
-    return (int)strtol(string, NULL, 10);
-}
-
