@@ -7,6 +7,7 @@
 lexer* new_lexer(char* text) {
     lexer* this = malloc(sizeof(lexer));
 
+    this->error = 0;
     this->pos = 0;
     this->text = text;
     this->current_char = text[0];
@@ -49,9 +50,9 @@ token* get_next_token(lexer* this) {
             return new_token(T_DIVIDE, "/");
         }
 
-        // at this point we have an error
-        printf("Error: unexpected character %c\n", this->current_char);
-        exit(-1);
+        // at this point we found a token/character that we don't recognize
+        this->error = 1;
+        break;
     }
     // at this point, we have reached the end of file
     return new_token(T_EOF, "\0");

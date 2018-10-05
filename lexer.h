@@ -7,6 +7,7 @@ typedef struct lexer {
     int pos;
     char* text;
     char current_char;
+    int error;
 } lexer;
 
 lexer* new_lexer(char*);

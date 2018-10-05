@@ -20,7 +20,8 @@ int main() {
         if (strlen(input) > 0) {
             interpreter = new_interpreter(input);
             result = expr(interpreter);
-            printf("%d\n", result);
+            if (!interpreter->error)
+                printf("%d\n", result);
             delete_interpreter(interpreter);
         }
         free(input);
