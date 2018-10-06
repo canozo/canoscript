@@ -29,6 +29,7 @@ interpreter* new_interpreter(char* text) {
 
     if (this->lexer->error) {
         this->error = ERROR_UNEXPECTED_TOKEN;
+        printf("error code %d: unknown token found: \"%s\"\n", this->error, this->current_token->value);
     }
 
     add_reference(this, this->current_token);
@@ -123,12 +124,6 @@ int expr_multiply_divide(interpreter* this) {
 }
 
 int expr(interpreter* this) {
-    // entrypoint
-    if (this->error) {
-        printf("error code %d: unknown token found: \"%s\"\n", this->error, this->current_token->value);
-        return -1;
-    }
-
     int result = expr_multiply_divide(this);
 
     while (this->current_token->type == T_PLUS || this->current_token->type == T_MINUS) {

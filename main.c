@@ -4,7 +4,7 @@
 #include "token.h"
 #include "interpreter.h"
 
-#define CHUNK 200
+#define CHUNK 32
 
 char* read_input();
 
@@ -30,7 +30,8 @@ int main() {
 }
 
 char* read_input() {
-    char* result = NULL;
+    char* result = malloc(1);
+    result[0] = '\0';
     char buffer[CHUNK];
     size_t len_buffer = 0;
     size_t len_result = 0;
@@ -47,7 +48,6 @@ char* read_input() {
 
         // allocate, initialize and concatenate new string
         result = realloc(result, len_result + 1);
-        result[0] = '\0';
         strcat(result, buffer);
     } while (len_buffer == CHUNK-1 && buffer[CHUNK-2] != '\n');
 
