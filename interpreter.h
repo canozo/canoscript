@@ -15,6 +15,7 @@ typedef struct interpreter {
     token* token_references[2048];
     int ref_pos;
     int error;
+    int test_mode;
     const char* types[10];
 } interpreter;
 

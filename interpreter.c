@@ -23,13 +23,16 @@ interpreter* new_interpreter(char* text) {
     memcpy(this, &interpreter_init, sizeof(interpreter));
 
     this->error = 0;
+    this->test_mode = 0;
     this->ref_pos = 0;
     this->lexer = new_lexer(text);
     this->current_token = get_next_token(this->lexer);
 
     if (this->lexer->error) {
         this->error = ERROR_UNEXPECTED_TOKEN;
-        printf("error code %d: unknown token found: \"%s\"\n", this->error, this->current_token->value);
+        if (!this->test_mode) {
+            printf("error code %d: unknown token found: \"%s\"\n", this->error, this->current_token->value);
+        }
     }
 
     add_reference(this, this->current_token);
@@ -57,14 +60,20 @@ void eat(interpreter* this, int type) {
 
         if (this->lexer->error) {
             this->error = ERROR_UNEXPECTED_TOKEN;
-            printf("error code %d: unknown token found: \"%s\"\n", this->error, this->current_token->value);
+            if (!this->test_mode) {
+                printf("error code %d: unknown token found: \"%s\"\n", this->error, this->current_token->value);
+            }
         }
     } else if (this->current_token == NULL) {
         this->error = ERROR_NULL_TOKEN;
-        printf("error code %d: current token is NULL\n", this->error);
+        if (!this->test_mode) {
+            printf("error code %d: current token is NULL\n", this->error);
+        }
     } else {
         this->error = ERROR_UNEXPECTED_TYPE;
-        printf("error code %d: type %s doesn't match with expected type %s, token: \"%s\"\n", this->error, this->types[this->current_token->type], this->types[type], this->current_token->value);
+        if (!this->test_mode) {
+            printf("error code %d: type %s doesn't match with expected type %s, token: \"%s\"\n", this->error, this->types[this->current_token->type], this->types[type], this->current_token->value);
+        }
     }
 }
 
@@ -108,7 +117,9 @@ int expr_multiply_divide(interpreter* this) {
             // check division by 0
             if (divide_by == 0) {
                 this->error = ERROR_DIVIDE_BY_ZERO;
-                printf("error code %d: can't divide by 0\n", this->error);
+                if (!this->test_mode) {
+                    printf("error code %d: can't divide by 0\n", this->error);
+                }
                 break;
             } else {
                 result /= divide_by;

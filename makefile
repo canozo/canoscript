@@ -4,7 +4,7 @@ main.out: main.o token.o lexer.o interpreter.o
 	rm *.o
 
 # main
-main.o: main.c token.h interpreter.h
+main.o: main.c interpreter.h
 	gcc -c main.c
 
 # token
