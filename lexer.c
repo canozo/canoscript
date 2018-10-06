@@ -52,17 +52,20 @@ token* get_next_token(lexer* this) {
 
         if (this->current_char == '(') {
             advance(this);
-            return new_token(T_PARENTH_OPEN, "(");
+            return new_token(T_PARENTHESES_OPEN, "(");
         }
 
         if (this->current_char == ')') {
             advance(this);
-            return new_token(T_PARENTH_CLOSE, ")");
+            return new_token(T_PARENTHESES_CLOSE, ")");
         }
 
         // at this point we found a token/character that we don't recognize
         this->error = 1;
-        break;
+        char* unknown = malloc(2);
+        unknown[0] = this->current_char;
+        unknown[1] = '\0';
+        return new_token(T_UNKNOWN, unknown);
     }
     // at this point, we have reached the end of file
     return new_token(T_EOF, "\0");

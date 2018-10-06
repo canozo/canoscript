@@ -12,7 +12,7 @@ token* new_token(int type, char* value) {
 }
 
 void delete_token(token* this) {
-    if (this->type == T_INTEGER) {
+    if (this->type == T_INTEGER || this->type == T_UNKNOWN) {
         free(this->value);
     }
     free(this);

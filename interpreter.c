@@ -4,8 +4,23 @@
 #include <ctype.h>
 #include "interpreter.h"
 
+const interpreter interpreter_init = {
+    .types = {
+        "T_EOF",
+        "T_INTEGER",
+        "T_PLUS",
+        "T_MINUS",
+        "T_MULTIPLY",
+        "T_DIVIDE",
+        "T_PARENTHESES_OPEN",
+        "T_PARENTHESES_CLOSE",
+        "T_UNKNOWN CAUGTH"
+    }
+};
+
 interpreter* new_interpreter(char* text) {
     interpreter* this = malloc(sizeof(interpreter));
+    memcpy(this, &interpreter_init, sizeof(interpreter));
 
     this->error = 0;
     this->ref_pos = 0;
@@ -37,17 +52,18 @@ void add_reference(interpreter* this, token* token_ref) {
 void eat(interpreter* this, int type) {
     if (this->current_token != NULL && this->current_token->type == type) {
         this->current_token = get_next_token(this->lexer);
+        add_reference(this, this->current_token);
 
         if (this->lexer->error) {
             this->error = ERROR_UNEXPECTED_TOKEN;
-            printf("error code %d: unexpected or unknown token found\n", this->error);
+            printf("error code %d: unknown token found: \"%s\"\n", this->error, this->current_token->value);
         }
     } else if (this->current_token == NULL) {
         this->error = ERROR_NULL_TOKEN;
         printf("error code %d: current token is NULL\n", this->error);
     } else {
         this->error = ERROR_UNEXPECTED_TYPE;
-        printf("error code %d: type %d doesn't match with expected type %d\n", this->error, this->current_token->type, type);
+        printf("error code %d: type %s doesn't match with expected type %s, token: \"%s\"\n", this->error, this->types[this->current_token->type], this->types[type], this->current_token->value);
     }
 }
 
@@ -62,13 +78,13 @@ int number_term(interpreter* this) {
     }
 }
 
-int parenth_expr(interpreter* this) {
+int expr_parentheses(interpreter* this) {
     int result;
 
-    if (this->current_token->type == T_PARENTH_OPEN) {
-        eat(this, T_PARENTH_OPEN);
+    if (this->current_token->type == T_PARENTHESES_OPEN) {
+        eat(this, T_PARENTHESES_OPEN);
         result = expr(this);
-        eat(this, T_PARENTH_CLOSE);
+        eat(this, T_PARENTHESES_CLOSE);
     } else {
         result = number_term(this);
     }
@@ -76,17 +92,17 @@ int parenth_expr(interpreter* this) {
     return result;
 }
 
-int mult_expr(interpreter* this) {
+int expr_multiply_divide(interpreter* this) {
     int divide_by;
-    int result = parenth_expr(this);
+    int result = expr_parentheses(this);
 
     while (this->current_token->type == T_MULTIPLY || this->current_token->type == T_DIVIDE) {
         if (this->current_token->type == T_MULTIPLY) {
             eat(this, T_MULTIPLY);
-            result *= parenth_expr(this);
+            result *= expr_parentheses(this);
         } else {
             eat(this, T_DIVIDE);
-            divide_by = parenth_expr(this);
+            divide_by = expr_parentheses(this);
 
             // check division by 0
             if (divide_by == 0) {
@@ -94,7 +110,7 @@ int mult_expr(interpreter* this) {
                 printf("error code %d: can't divide by 0\n", this->error);
                 break;
             } else {
-                result /= parenth_expr(this);
+                result /= divide_by;
             }
         }
 
@@ -107,21 +123,21 @@ int mult_expr(interpreter* this) {
 }
 
 int expr(interpreter* this) {
-    // entrypoint to the parser
+    // entrypoint
     if (this->error) {
-        printf("error code %d: unexpected or unknown token found\n", this->error);
+        printf("error code %d: unknown token found: \"%s\"\n", this->error, this->current_token->value);
         return -1;
     }
 
-    int result = mult_expr(this);
+    int result = expr_multiply_divide(this);
 
     while (this->current_token->type == T_PLUS || this->current_token->type == T_MINUS) {
         if (this->current_token->type == T_PLUS) {
             eat(this, T_PLUS);
-            result += mult_expr(this);
+            result += expr_multiply_divide(this);
         } else {
             eat(this, T_MINUS);
-            result -= mult_expr(this);
+            result -= expr_multiply_divide(this);
         }
 
         if (this->error) {

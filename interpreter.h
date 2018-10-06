@@ -15,14 +15,17 @@ typedef struct interpreter {
     token* token_references[2048];
     int ref_pos;
     int error;
+    const char* types[10];
 } interpreter;
+
+extern const interpreter interpreter_init;
 
 interpreter* new_interpreter(char*);
 void delete_interpreter(interpreter*);
 void add_reference(interpreter*, token*);
 void eat(interpreter*, int);
-int parenth_expr(interpreter*);
-int mult_expr(interpreter*);
+int expr_parentheses(interpreter*);
+int expr_multiply_divide(interpreter*);
 int expr(interpreter*);
 
 #endif
