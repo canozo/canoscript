@@ -14,19 +14,23 @@
 typedef struct parser {
     token* current_token;
     lexer* lexer;
+    node* node_references[2048];
+    int node_ref_pos;
     token* token_references[2048];
-    int ref_pos;
+    int token_ref_pos;
     int error;
     const char* types[10];
+    // 64 messages of 128 characters max:
+    char error_messages[64][128];
     int error_count;
-    char* error_messages[32];
 } parser;
 
 extern const parser parser_init;
 
 parser* new_parser(char*);
 void delete_parser(parser*);
-void add_reference(parser*, token*);
+void add_node_reference(parser*, node*);
+void add_token_reference(parser*, token*);
 token* eat(parser*, int);
 node* number_term(parser*);
 node* expr_parentheses(parser*);

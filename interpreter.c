@@ -14,7 +14,6 @@ interpreter* new_interpreter(char* text) {
 }
 
 void delete_interpreter(interpreter* this) {
-    // TODO should probably keep reference count of all nodes
     delete_parser(this->parser);
     free(this);
 }
@@ -45,16 +44,15 @@ int visit_binary_op(interpreter* this, node* current_node) {
 
         if (divide_by == 0) {
             this->error = ERROR_DIVIDE_BY_ZERO;
-            // sprintf(this->parser->error_messages[this->parser->error_count], "error code %d: division by 0\n");
+            sprintf(this->parser->error_messages[this->parser->error_count], "error code %d: division by 0\n", this->error);
             this->parser->error_count += 1;
-
             return -42;
         } else {
             return visit(this, current_node->left) / divide_by;
         }
     } else {
         this->error = ERROR_UNKNOWN_OPERATOR;
-        // sprintf(this->parser->error_messages[this->parser->error_count], "error code %d: unknown binary operator %d\n", current_node->token->type);
+        sprintf(this->parser->error_messages[this->parser->error_count], "error code %d: unknown binary operator %d\n", this->error, current_node->token->type);
         this->parser->error_count += 1;
         return -42;
     }
@@ -70,18 +68,26 @@ int interpret(interpreter* this) {
     node* root = parse(this->parser);
     this->error = this->parser->error;
 
-    if (!this->error) {
-        return visit(this, root);
-    } else if (this->print_mode) {
-        // TODO fix sprintf on errors
-        // print_errors(this);
+    if (this->error) {
+        print_errors(this);
         return -42;
     }
+
+    int result = visit(this, root);
+
+    if (this->error) {
+        print_errors(this);
+        return -42;
+    }
+
+    return result;
 }
 
 void print_errors(interpreter* this) {
-    for (int i = 0; i < this->parser->error_count; i++) {
-        printf("%s", this->parser->error_messages[i]);
+    if (this->print_mode) {
+        for (int i = 0; i < this->parser->error_count; i++) {
+            printf("%s", this->parser->error_messages[i]);
+        }
     }
 }
 

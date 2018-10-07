@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 #include "parser.h"
 
 const parser parser_init = {
@@ -24,32 +23,42 @@ parser* new_parser(char* text) {
 
     this->error = 0;
     this->error_count = 0;
-    this->ref_pos = 0;
+    this->token_ref_pos = 0;
     this->lexer = new_lexer(text);
     this->current_token = get_next_token(this->lexer);
 
     if (this->lexer->error) {
         this->error = ERROR_UNEXPECTED_TOKEN;
-        // sprintf(this->error_messages[this->error_count], "error code %d: unknown token found: \"%s\"\n", this->error, this->current_token->value);
+        sprintf(this->error_messages[this->error_count], "error code %d: unknown token found: \"%s\"\n", this->error, this->current_token->value);
         this->error_count += 1;
     }
 
-    add_reference(this, this->current_token);
+    add_token_reference(this, this->current_token);
 
     return this;
 }
 
 void delete_parser(parser* this) {
-    for (int i = 0; i < this->ref_pos; i++) {
+    int i;
+    for (i = 0; i < this->node_ref_pos; i++) {
+        delete_node(this->node_references[i]);
+    }
+    for (i = 0; i < this->token_ref_pos; i++) {
         delete_token(this->token_references[i]);
     }
     delete_lexer(this->lexer);
     free(this);
 }
 
-void add_reference(parser* this, token* token_ref) {
-    this->token_references[this->ref_pos] = token_ref;
-    this->ref_pos += 1;
+void add_node_reference(parser* this, node* node_ref) {
+    this->node_references[this->node_ref_pos] = node_ref;
+    this->node_ref_pos += 1;
+}
+
+
+void add_token_reference(parser* this, token* token_ref) {
+    this->token_references[this->token_ref_pos] = token_ref;
+    this->token_ref_pos += 1;
 }
 
 token* eat(parser* this, int type) {
@@ -58,21 +67,21 @@ token* eat(parser* this, int type) {
     if (this->current_token != NULL && this->current_token->type == type) {
         eaten = this->current_token;
         this->current_token = get_next_token(this->lexer);
-        add_reference(this, this->current_token);
+        add_token_reference(this, this->current_token);
 
         if (this->lexer->error) {
             this->error = ERROR_UNEXPECTED_TOKEN;
-            // sprintf(this->error_messages[this->error_count], "error code %d: unknown token found: \"%s\"\n", this->error, this->current_token->value);
+            sprintf(this->error_messages[this->error_count], "error code %d: unknown token found: \"%s\"\n", this->error, this->current_token->value);
             this->error_count += 1;
             eaten = NULL;
         }
     } else if (this->current_token == NULL) {
         this->error = ERROR_NULL_TOKEN;
-        // sprintf(this->error_messages[this->error_count], "error code %d: current token is NULL\n", this->error);
+        sprintf(this->error_messages[this->error_count], "error code %d: current token is NULL\n", this->error);
         this->error_count += 1;
     } else {
         this->error = ERROR_UNEXPECTED_TYPE;
-        // sprintf(this->error_messages[this->error_count], "error code %d: type %s doesn't match with expected type %s, token: \"%s\"\n", this->error, this->types[this->current_token->type], this->types[type], this->current_token->value);
+        sprintf(this->error_messages[this->error_count], "error code %d: type %s doesn't match with expected type %s, token: \"%s\"\n", this->error, this->types[this->current_token->type], this->types[type], this->current_token->value);
         this->error_count += 1;
     }
 
@@ -80,14 +89,16 @@ token* eat(parser* this, int type) {
 }
 
 node* number_term(parser* this) {
+    node* result = NULL;
     token* term = this->current_token;
     eat(this, T_INTEGER);
 
     if (!this->error) {
-        return new_node_number(term);
-    } else {
-        return NULL;
+        result = new_node_number(term);
+        add_node_reference(this, result);
     }
+
+    return result;
 }
 
 node* expr_parentheses(parser* this) {
@@ -116,6 +127,7 @@ node* expr_multiply_divide(parser* this) {
         }
 
         result = new_node_binary_op(result, eaten, expr_parentheses(this));
+        add_node_reference(this, result);
 
         if (this->error) {
             break;
@@ -137,6 +149,7 @@ node* expr(parser* this) {
         }
 
         result = new_node_binary_op(result, eaten, expr_multiply_divide(this));
+        add_node_reference(this, result);
 
         if (this->error) {
             break;

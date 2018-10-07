@@ -3,7 +3,6 @@
 #include <string.h>
 #include <assert.h>
 #include "interpreter.h"
-// TODO check of useless includes
 
 #define CHUNK 32
 
