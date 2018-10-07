@@ -3,6 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include "interpreter.h"
+// TODO check of useless includes
 
 #define CHUNK 32
 
@@ -31,7 +32,7 @@ void run_program() {
 
         if (strlen(input) > 0) {
             interpreter = new_interpreter(input);
-            result = expr(interpreter);
+            result = interpret(interpreter);
             if (!interpreter->error)
                 printf("%d\n", result);
             delete_interpreter(interpreter);
@@ -48,63 +49,63 @@ void run_tests() {
 
     printf("Test #1: 5 = 5\n");
     interpreter = new_interpreter("5");
-    interpreter->test_mode = 1;
+    interpreter->print_mode = 0;
     assert(!interpreter->error);
-    result = expr(interpreter);
+    result = interpret(interpreter);
     assert(result == 5);
     delete_interpreter(interpreter);
 
     printf("Test #2: (5) = 5\n");
     interpreter = new_interpreter("(5)");
-    interpreter->test_mode = 1;
+    interpreter->print_mode = 0;
     assert(!interpreter->error);
-    result = expr(interpreter);
+    result = interpret(interpreter);
     assert(result == 5);
     delete_interpreter(interpreter);
 
     printf("Test #3: 3 / 2 = 1\n");
     interpreter = new_interpreter("3 / 2");
-    interpreter->test_mode = 1;
+    interpreter->print_mode = 0;
     assert(!interpreter->error);
-    result = expr(interpreter);
+    result = interpret(interpreter);
     assert(result == 1);
     delete_interpreter(interpreter);
 
     printf("Test #4: 2 + x = ERROR\n");
     interpreter = new_interpreter("2 + x");
-    interpreter->test_mode = 1;
-    expr(interpreter);
+    interpreter->print_mode = 0;
+    interpret(interpreter);
     assert(interpreter->error);
     delete_interpreter(interpreter);
 
     printf("Test #5: 25 / (5 - 3 - 2) = ERROR\n");
     interpreter = new_interpreter("25 / (5 - 3 - 2)");
-    interpreter->test_mode = 1;
-    expr(interpreter);
+    interpreter->print_mode = 0;
+    interpret(interpreter);
     assert(interpreter->error);
     delete_interpreter(interpreter);
 
     printf("Test #6: 7 + 3 * (10 / (12 / (3 + 1) - 1)) = 22\n");
     interpreter = new_interpreter("7 + 3 * (10 / (12 / (3 + 1) - 1))");
-    interpreter->test_mode = 1;
+    interpreter->print_mode = 0;
     assert(!interpreter->error);
-    result = expr(interpreter);
+    result = interpret(interpreter);
     assert(result == 22);
     delete_interpreter(interpreter);
 
     printf("Test #7: 7 + 3 * (10 / (12 / (3 + 1) - 1)) / (2 + 3) - 5 - 3 + (8) = 10\n");
     interpreter = new_interpreter("7 + 3 * (10 / (12 / (3 + 1) - 1)) / (2 + 3) - 5 - 3 + (8)");
-    interpreter->test_mode = 1;
+    interpreter->print_mode = 0;
     assert(!interpreter->error);
-    result = expr(interpreter);
+    result = interpret(interpreter);
     assert(result == 10);
     delete_interpreter(interpreter);
 
     printf("Test #8: 7 + (((3 + 2))) = 12\n");
     interpreter = new_interpreter("7 + (((3 + 2)))");
-    interpreter->test_mode = 1;
+    interpreter->print_mode = 0;
     assert(!interpreter->error);
-    result = expr(interpreter);
+    result = interpret(interpreter);
     assert(result == 12);
     delete_interpreter(interpreter);
 

@@ -102,7 +102,3 @@ char* get_integer_str(lexer* this) {
 
     return result;
 }
-
-int strtoint(char* string) {
-    return (int)strtol(string, NULL, 10);
-}
