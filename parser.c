@@ -13,7 +13,7 @@ const parser parser_init = {
         "T_DIVIDE",
         "T_PARENTHESES_OPEN",
         "T_PARENTHESES_CLOSE",
-        "T_UNKNOWN CAUGTH"
+        "T_UNKNOWN"
     }
 };
 
@@ -103,8 +103,15 @@ node* number_term(parser* this) {
 
 node* expr_parentheses(parser* this) {
     node* result;
+    token* eaten;
 
-    if (this->current_token->type == T_PARENTHESES_OPEN) {
+    if (this->current_token->type == T_PLUS) {
+        eaten = eat(this, T_PLUS);
+        result = new_node_unary_op(eaten, expr_parentheses(this));
+    } else if (this->current_token->type == T_MINUS) {
+        eaten = eat(this, T_MINUS);
+        result = new_node_unary_op(eaten, expr_parentheses(this));
+    } else if (this->current_token->type == T_PARENTHESES_OPEN) {
         eat(this, T_PARENTHESES_OPEN);
         result = expr(this);
         eat(this, T_PARENTHESES_CLOSE);

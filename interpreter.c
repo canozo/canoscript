@@ -25,6 +25,9 @@ int visit(interpreter* this, node* current_node) {
 
     } else if (current_node->type == N_BINARY_OP) {
         return visit_binary_op(this, current_node);
+
+    } else if (current_node->type == N_UNARY_OP) {
+        return visit_unary_op(this, current_node);
     }
 }
 
@@ -50,11 +53,15 @@ int visit_binary_op(interpreter* this, node* current_node) {
         } else {
             return visit(this, current_node->left) / divide_by;
         }
-    } else {
-        this->error = ERROR_UNKNOWN_OPERATOR;
-        sprintf(this->parser->error_messages[this->parser->error_count], "error code %d: unknown binary operator %d\n", this->error, current_node->token->type);
-        this->parser->error_count += 1;
-        return -42;
+    }
+}
+
+int visit_unary_op(interpreter* this, node* current_node) {
+    if (current_node->token->type == T_PLUS) {
+        return +visit(this, current_node->right);
+
+    } else if (current_node->token->type == T_MINUS) {
+        return -visit(this, current_node->right);
     }
 }
 

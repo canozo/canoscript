@@ -12,6 +12,18 @@ node* new_node_binary_op(node* left, token* token, node* right) {
     return this;
 }
 
+node* new_node_unary_op(token* token, node* right) {
+    node* this = malloc(sizeof(node));
+
+    this->type = N_UNARY_OP;
+    this->left = NULL;
+    this->token = token;
+    this->right = right;
+
+    return this;
+}
+
+
 node* new_node_number(token* token) {
     node* this = malloc(sizeof(node));
 

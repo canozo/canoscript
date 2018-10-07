@@ -108,6 +108,22 @@ void run_tests() {
     assert(result == 12);
     delete_interpreter(interpreter);
 
+    printf("Test #9: -(2) = -2\n");
+    interpreter = new_interpreter("-(2)");
+    interpreter->print_mode = 0;
+    assert(!interpreter->error);
+    result = interpret(interpreter);
+    assert(result == -2);
+    delete_interpreter(interpreter);
+
+    printf("Test #10: -+-2 = 2\n");
+    interpreter = new_interpreter("-+-2");
+    interpreter->print_mode = 0;
+    assert(!interpreter->error);
+    result = interpret(interpreter);
+    assert(result == 2);
+    delete_interpreter(interpreter);
+
     printf("Passed all the tests!\n");
 }
 

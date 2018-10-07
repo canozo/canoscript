@@ -3,6 +3,7 @@
 
 #define N_NUMBER 0
 #define N_BINARY_OP 1
+#define N_UNARY_OP 2
 
 #include "token.h"
 
@@ -14,6 +15,7 @@ typedef struct node {
 } node;
 
 node* new_node_binary_op(node*, token*, node*);
+node* new_node_unary_op(token*, node*);
 node* new_node_number(token*);
 void delete_node(node*);
 

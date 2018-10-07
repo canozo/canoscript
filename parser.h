@@ -5,7 +5,6 @@
 #define ERROR_UNEXPECTED_TYPE 2
 #define ERROR_UNEXPECTED_TOKEN 3
 #define ERROR_DIVIDE_BY_ZERO 4
-#define ERROR_UNKNOWN_OPERATOR 5
 
 #include "token.h"
 #include "node.h"

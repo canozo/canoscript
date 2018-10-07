@@ -14,6 +14,7 @@ interpreter* new_interpreter(char*);
 void delete_interpreter(interpreter*);
 int visit(interpreter*, node*);
 int visit_binary_op(interpreter*, node*);
+int visit_unary_op(interpreter*, node*);
 int visit_number(interpreter*, node*);
 int interpret(interpreter*);
 void print_errors(interpreter*);
