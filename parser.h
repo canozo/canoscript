@@ -18,7 +18,7 @@ typedef struct parser {
     token* token_references[2048];
     int token_ref_pos;
     int error;
-    const char* types[10];
+    const char* types[32];
     // 64 messages of 128 characters max:
     char error_messages[64][128];
     int error_count;
@@ -32,9 +32,12 @@ void add_node_reference(parser*, node*);
 void add_token_reference(parser*, token*);
 token* eat(parser*, int);
 node* number_term(parser*);
-node* expr_parentheses(parser*);
-node* expr_multiply_divide(parser*);
-node* expr(parser*);
+node* math_parentheses(parser*);
+node* math_multiply_divide(parser*);
+node* math(parser*);
+node** statement_list(parser*);
+node* compound_statement(parser*);
+node* program(parser*);
 node* parse(parser*);
 
 #endif

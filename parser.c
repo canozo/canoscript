@@ -13,7 +13,10 @@ const parser parser_init = {
         "T_DIVIDE",
         "T_PARENTHESES_OPEN",
         "T_PARENTHESES_CLOSE",
-        "T_UNKNOWN"
+        "T_UNKNOWN",
+        "T_ASSIGN",
+        "T_KEYWORD",
+        "T_VARIABLE"
     }
 };
 
@@ -89,6 +92,7 @@ token* eat(parser* this, int type) {
 }
 
 node* number_term(parser* this) {
+    // number: T_INTEGER
     node* result = NULL;
     token* term = this->current_token;
     eat(this, T_INTEGER);
@@ -101,19 +105,23 @@ node* number_term(parser* this) {
     return result;
 }
 
-node* expr_parentheses(parser* this) {
+node* math_parentheses(parser* this) {
+    // math_parentheses: T_PLUS math_parentheses
+    //                 | T_MINUS math_parentheses
+    //                 | T_PARENTHESES_OPEN math T_PARENTHESES_OPEN
+    //                 | T_INTEGER
     node* result;
     token* eaten;
 
     if (this->current_token->type == T_PLUS) {
         eaten = eat(this, T_PLUS);
-        result = new_node_unary_op(eaten, expr_parentheses(this));
+        result = new_node_unary_op(eaten, math_parentheses(this));
     } else if (this->current_token->type == T_MINUS) {
         eaten = eat(this, T_MINUS);
-        result = new_node_unary_op(eaten, expr_parentheses(this));
+        result = new_node_unary_op(eaten, math_parentheses(this));
     } else if (this->current_token->type == T_PARENTHESES_OPEN) {
         eat(this, T_PARENTHESES_OPEN);
-        result = expr(this);
+        result = math(this);
         eat(this, T_PARENTHESES_CLOSE);
     } else {
         result = number_term(this);
@@ -122,8 +130,9 @@ node* expr_parentheses(parser* this) {
     return result;
 }
 
-node* expr_multiply_divide(parser* this) {
-    node* result = expr_parentheses(this);
+node* math_multiply_divide(parser* this) {
+    // math_multiply_divide: math_parentheses ((T_MULTIPLY | T_DIVIDE) math_parentheses)*
+    node* result = math_parentheses(this);
     token* eaten;
 
     while (this->current_token->type == T_MULTIPLY || this->current_token->type == T_DIVIDE) {
@@ -133,7 +142,7 @@ node* expr_multiply_divide(parser* this) {
             eaten = eat(this, T_DIVIDE);
         }
 
-        result = new_node_binary_op(result, eaten, expr_parentheses(this));
+        result = new_node_binary_op(result, eaten, math_parentheses(this));
         add_node_reference(this, result);
 
         if (this->error) {
@@ -144,8 +153,9 @@ node* expr_multiply_divide(parser* this) {
     return result;
 }
 
-node* expr(parser* this) {
-    node* result = expr_multiply_divide(this);
+node* math(parser* this) {
+    // math: math_multiply_divide ((T_PLUS | T_MINUS) math_multiply_divide)*
+    node* result = math_multiply_divide(this);
     token* eaten;
 
     while (this->current_token->type == T_PLUS || this->current_token->type == T_MINUS) {
@@ -155,7 +165,7 @@ node* expr(parser* this) {
             eaten = eat(this, T_MINUS);
         }
 
-        result = new_node_binary_op(result, eaten, expr_multiply_divide(this));
+        result = new_node_binary_op(result, eaten, math_multiply_divide(this));
         add_node_reference(this, result);
 
         if (this->error) {
@@ -166,6 +176,58 @@ node* expr(parser* this) {
     return result;
 }
 
+node* statement(parser* this) {
+    // statement: compound_statement
+    //          | assignment_statement
+    //          | empty
+    node* result;
+
+    return result;
+}
+
+node** statement_list(parser* this) {
+    // statement_list: statement
+    //               | statement SEMI statement_list
+    // TODO use vector
+    // TODO add arr reference before or after returning
+    // TODO set the size somewhere before returning
+    this->sl_size = 0;
+    node** results = malloc(sizeof(node));
+    results[0] = statement(this);
+
+    while (this->current_token->type == T_SEMICOLON) {
+        eat(this, T_SEMICOLON);
+        this->sl_size += 1;
+        results = realloc(results, this->sl_size);
+        results[this->sl_size - 1] = statement(this);
+    }
+
+    return results;
+}
+
+node* compound_statement(parser* this) {
+    // compound_statement: statement_list
+    node** nodes = statement_list(this);
+    node* result = new_node_compound();
+    add_node_reference(this, result);
+
+    for (int i = 0; i < this->sl_size; i++) {
+        result->children[result->child_count] = nodes[i];
+        result->child_count += 1;
+    }
+
+    return result;
+}
+
+node* program(parser* this) {
+    // program: T_BEGIN compound_statement T_EOF T_END
+    eat(this, T_BEGIN);
+    node* result = compound_statement(this);
+    eat(this, T_END);
+    eat(this, T_EOF);
+    return result;
+}
+
 node* parse(parser* this) {
-    return expr(this);
+    return math(this);
 }
