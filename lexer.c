@@ -3,8 +3,16 @@
 #include <ctype.h>
 #include "lexer.h"
 
+const lexer lexer_init = {
+    .keywords = {
+        "begin",
+        "end"
+    }
+};
+
 lexer* new_lexer(char* text) {
     lexer* this = malloc(sizeof(lexer));
+    memcpy(this, &lexer_init, sizeof(lexer));
 
     this->error = 0;
     this->pos = 0;
@@ -19,8 +27,10 @@ void delete_lexer(lexer* this) {
 }
 
 token* get_next_token(lexer* this) {
+    char* word = NULL;
+
     while (this->current_char != '\0') {
-        if (this->current_char == ' ') {
+        if (this->current_char == ' ' || this->current_char == '\n') {
             advance(this);
             continue;
         }
@@ -59,6 +69,27 @@ token* get_next_token(lexer* this) {
             return new_token(T_PARENTHESES_CLOSE, ")");
         }
 
+        if (this->current_char == ';') {
+            advance(this);
+            return new_token(T_SEMICOLON, ";");
+        }
+
+        if (this->current_char == '=') {
+            advance(this);
+            return new_token(T_ASSIGN, "=");
+        }
+
+        if (isalpha(this->current_char)) {
+            // it can either be a reserved keyword or a new identifier
+            word = get_id_str(this);
+
+            if (iskeyword(this, word)) {
+                return new_token(T_KEYWORD, word);
+            } else {
+                return new_token(T_VARIABLE, word);
+            }
+        }
+
         // at this point we found a token/character that we don't recognize
         this->error = 1;
         char* unknown = malloc(2);
@@ -70,6 +101,29 @@ token* get_next_token(lexer* this) {
     return new_token(T_EOF, "\0");
 }
 
+int iskeyword(lexer* this, char* word) {
+    for (int i = 0; i < 16; i++) {
+        if (this->keywords[i] == NULL) {
+            break;
+        }
+
+        if (strcasecmp(word, this->keywords[i]) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+char peek(lexer* this) {
+    // peek one character ahead
+    int peek_pos = this->pos + 1;
+    if (peek_pos > strlen(this->text)) {
+        return '\0';
+    } else {
+        return this->text[peek_pos];
+    }
+}
+
 void advance(lexer* this) {
     this->pos += 1;
     if (this->pos > strlen(this->text)) {
@@ -77,6 +131,29 @@ void advance(lexer* this) {
     } else {
         this->current_char = this->text[this->pos];
     }
+}
+
+char* get_id_str(lexer* this) {
+    char* result = NULL;
+    char temp[32];
+    size_t length = 0;
+
+    while (this->current_char != '\0' && (isalpha(this->current_char) || this->current_char == '_') && length < 32) {
+        temp[length] = this->current_char;
+        length += 1;
+        advance(this);
+    }
+
+    // null char at the end
+    temp[length] = '\0';
+    length += 1;
+
+    // allocate, initialize and concatenate new string
+    result = malloc(length);
+    result[0] = '\0';
+    strcat(result, temp);
+
+    return result;
 }
 
 char* get_integer_str(lexer* this) {
