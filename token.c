@@ -2,7 +2,7 @@
 #include "token.h"
 
 token* new_token(int type, char* value) {
-    token* this = malloc(sizeof(token));
+    token* this = malloc(sizeof(*this));
 
     this->type = type;
     this->value = value;

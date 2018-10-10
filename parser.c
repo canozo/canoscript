@@ -21,14 +21,15 @@ const parser parser_init = {
 };
 
 parser* new_parser(char* text) {
-    parser* this = malloc(sizeof(parser));
-    memcpy(this, &parser_init, sizeof(parser));
+    parser* this = malloc(sizeof(*this));
+    memcpy(this, &parser_init, sizeof(*this));
 
     this->error = 0;
     this->error_count = 0;
-    this->token_ref_pos = 0;
     this->lexer = new_lexer(text);
     this->current_token = get_next_token(this->lexer);
+    this->node_references = new_vec(sizeof(node));
+    this->token_references = new_vec(sizeof(token));
 
     if (this->lexer->error) {
         this->error = ERROR_UNEXPECTED_TOKEN;
@@ -42,26 +43,31 @@ parser* new_parser(char* text) {
 }
 
 void delete_parser(parser* this) {
-    int i;
-    for (i = 0; i < this->node_ref_pos; i++) {
-        delete_node(this->node_references[i]);
+    unsigned int i;
+    // delete all node references
+    for (i = 0; i < this->node_references->size; i++) {
+        delete_node(vec_get(this->node_references, i));
     }
-    for (i = 0; i < this->token_ref_pos; i++) {
-        delete_token(this->token_references[i]);
+
+    // delete all token references
+    for (i = 0; i < this->token_references->size; i++) {
+        delete_token(vec_get(this->token_references, i));
     }
+
+    delete_vec(this->node_references);
+    delete_vec(this->token_references);
+
     delete_lexer(this->lexer);
     free(this);
 }
 
 void add_node_reference(parser* this, node* node_ref) {
-    this->node_references[this->node_ref_pos] = node_ref;
-    this->node_ref_pos += 1;
+    this->node_references = vec_push(this->node_references, node_ref);
 }
 
 
 void add_token_reference(parser* this, token* token_ref) {
-    this->token_references[this->token_ref_pos] = token_ref;
-    this->token_ref_pos += 1;
+    this->token_references = vec_push(this->token_references, token_ref);
 }
 
 token* eat(parser* this, int type) {
@@ -93,6 +99,7 @@ token* eat(parser* this, int type) {
 
 node* number_term(parser* this) {
     // number: T_INTEGER
+
     node* result = NULL;
     token* term = this->current_token;
     eat(this, T_INTEGER);
@@ -106,10 +113,12 @@ node* number_term(parser* this) {
 }
 
 node* math_parentheses(parser* this) {
-    // math_parentheses: T_PLUS math_parentheses
-    //                 | T_MINUS math_parentheses
-    //                 | T_PARENTHESES_OPEN math T_PARENTHESES_OPEN
-    //                 | T_INTEGER
+    // math_parentheses : T_PLUS math_parentheses
+    //                  | T_MINUS math_parentheses
+    //                  | T_PARENTHESES_OPEN math T_PARENTHESES_OPEN
+    //                  | T_INTEGER
+    //                  | variable
+
     node* result;
     token* eaten;
 
@@ -123,15 +132,18 @@ node* math_parentheses(parser* this) {
         eat(this, T_PARENTHESES_OPEN);
         result = math(this);
         eat(this, T_PARENTHESES_CLOSE);
-    } else {
+    } else if (this->current_token->type == T_INTEGER) {
         result = number_term(this);
+    } else {
+        result = variable(this);
     }
 
     return result;
 }
 
 node* math_multiply_divide(parser* this) {
-    // math_multiply_divide: math_parentheses ((T_MULTIPLY | T_DIVIDE) math_parentheses)*
+    // math_multiply_divide : math_parentheses ((T_MULTIPLY | T_DIVIDE) math_parentheses)*
+
     node* result = math_parentheses(this);
     token* eaten;
 
@@ -154,7 +166,8 @@ node* math_multiply_divide(parser* this) {
 }
 
 node* math(parser* this) {
-    // math: math_multiply_divide ((T_PLUS | T_MINUS) math_multiply_divide)*
+    // math : math_multiply_divide ((T_PLUS | T_MINUS) math_multiply_divide)*
+
     node* result = math_multiply_divide(this);
     token* eaten;
 
@@ -176,58 +189,83 @@ node* math(parser* this) {
     return result;
 }
 
-node* statement(parser* this) {
-    // statement: compound_statement
-    //          | assignment_statement
-    //          | empty
-    node* result;
+node* variable(parser* this) {
+    // variable : T_VARIABLE
+
+    node* result = new_node_variable(eat(this, T_VARIABLE));
+    add_node_reference(this, result);
+    return result;
+}
+
+node* assignment_statement(parser* this) {
+    // assignment_statement : variable T_ASSIGN math
+
+    node* left = variable(this);
+    token* assign_tok = eat(this, T_ASSIGN);
+    node* right = math(this);
+
+    // build node
+    node* result = new_node_assign(left, assign_tok, right);
+    add_node_reference(this, result);
 
     return result;
 }
 
-node** statement_list(parser* this) {
-    // statement_list: statement
-    //               | statement SEMI statement_list
-    // TODO use vector
-    // TODO add arr reference before or after returning
-    // TODO set the size somewhere before returning
-    this->sl_size = 0;
-    node** results = malloc(sizeof(node));
-    results[0] = statement(this);
+node* empty_statement(parser* this) {
+    // empty_statement :
+    node* result = new_node_empty();
+    add_node_reference(this, result);
+    return result;
+}
+
+node* statement(parser* this) {
+    // statement : assignment_statement
+    //           | empty_statement
+
+    node* result;
+
+    if (this->current_token->type == T_ASSIGN) {
+        result = assignment_statement(this);
+    } else {
+        result = empty_statement(this);
+    }
+
+    return result;
+}
+
+vec* statement_list(parser* this) {
+    // statement_list : statement
+    //                | statement SEMI statement_list
+
+    vec* results = new_vec(sizeof(node));
+    results = vec_push(results, statement(this));
 
     while (this->current_token->type == T_SEMICOLON) {
         eat(this, T_SEMICOLON);
-        this->sl_size += 1;
-        results = realloc(results, this->sl_size);
-        results[this->sl_size - 1] = statement(this);
+        results = vec_push(results, statement(this));
     }
 
     return results;
 }
 
 node* compound_statement(parser* this) {
-    // compound_statement: statement_list
-    node** nodes = statement_list(this);
-    node* result = new_node_compound();
-    add_node_reference(this, result);
+    // compound_statement : statement_list
 
-    for (int i = 0; i < this->sl_size; i++) {
-        result->children[result->child_count] = nodes[i];
-        result->child_count += 1;
-    }
+    vec* nodes = statement_list(this);
+    node* result = new_node_compound(nodes);
+    add_node_reference(this, result);
 
     return result;
 }
 
 node* program(parser* this) {
-    // program: T_BEGIN compound_statement T_EOF T_END
-    eat(this, T_BEGIN);
+    // program : compound_statement T_EOF
+
     node* result = compound_statement(this);
-    eat(this, T_END);
     eat(this, T_EOF);
     return result;
 }
 
 node* parse(parser* this) {
-    return math(this);
+    return program(this);
 }

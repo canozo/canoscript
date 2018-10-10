@@ -5,18 +5,18 @@
 #define ERROR_UNEXPECTED_TYPE 2
 #define ERROR_UNEXPECTED_TOKEN 3
 #define ERROR_DIVIDE_BY_ZERO 4
+#define ERROR_VARIABLE_NOT_DEF 5
 
 #include "token.h"
 #include "node.h"
 #include "lexer.h"
+#include "vec.h"
 
 typedef struct parser {
     token* current_token;
     lexer* lexer;
-    node* node_references[2048];
-    int node_ref_pos;
-    token* token_references[2048];
-    int token_ref_pos;
+    vec* node_references;
+    vec* token_references;
     int error;
     const char* types[32];
     // 64 messages of 128 characters max:
@@ -35,7 +35,11 @@ node* number_term(parser*);
 node* math_parentheses(parser*);
 node* math_multiply_divide(parser*);
 node* math(parser*);
-node** statement_list(parser*);
+node* variable(parser*);
+node* assignment_statement(parser*);
+node* empty_statement(parser*);
+node* statement(parser*);
+vec* statement_list(parser*);
 node* compound_statement(parser*);
 node* program(parser*);
 node* parse(parser*);

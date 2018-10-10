@@ -11,8 +11,8 @@ const lexer lexer_init = {
 };
 
 lexer* new_lexer(char* text) {
-    lexer* this = malloc(sizeof(lexer));
-    memcpy(this, &lexer_init, sizeof(lexer));
+    lexer* this = malloc(sizeof(*this));
+    memcpy(this, &lexer_init, sizeof(*this));
 
     this->error = 0;
     this->pos = 0;

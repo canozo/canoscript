@@ -12,13 +12,11 @@ typedef struct vec {
 
 vec* new_vec(size_t);
 void delete_vec(vec*);
-vec* vec_append(vec*, void*);
+vec* vec_push(vec*, void*);
 vec* vec_resize(vec*);
 void* vec_get(vec*, unsigned int);
-
-// remove
-// pop
-// push
-// set
+void* vec_remove(vec*, unsigned int);
+void* vec_pop(vec*);
+void vec_set(vec*, unsigned int, void*);
 
 #endif

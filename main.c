@@ -9,6 +9,7 @@
 void run_program();
 void run_tests();
 char* read_input();
+char* read_file(char*);
 
 int main(int argc, char **argv) {
     if (argc > 1 && strcmp(argv[1], "test") == 0) {
@@ -26,8 +27,7 @@ void run_program() {
     int result;
 
     while (1) {
-        printf("> ");
-        input = read_input();
+        input = read_file("program.cs");
 
         if (strlen(input) > 0) {
             interpreter = new_interpreter(input);
@@ -148,6 +148,23 @@ char* read_input() {
         result = realloc(result, len_result + 1);
         strcat(result, buffer);
     } while (len_buffer == CHUNK-1 && buffer[CHUNK-2] != '\n');
+
+    return result;
+}
+
+char* read_file(char* filename) {
+    char* result = NULL;
+    FILE* file = fopen(filename, "r");
+    if (file) {
+        fseek(file, 0L, SEEK_END);
+        long len_buffer = ftell(file);
+        result = malloc(len_buffer + 1);
+        fseek(file, 0L, SEEK_SET);
+
+        size_t len_new = fread(result, sizeof(char), len_buffer, file);
+        result[len_new] = '\0';
+    }
+    fclose(file);
 
     return result;
 }

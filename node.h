@@ -10,14 +10,14 @@
 #define N_EMPTY 5
 
 #include "token.h"
+#include "vec.h"
 
 typedef struct node {
     int type;
     struct node* left;
     token* token;
     struct node* right;
-    struct node* children[128];
-    int child_count;
+    vec* children;
 } node;
 
 node* new_node_binary_op(node*, token*, node*);
@@ -25,7 +25,7 @@ node* new_node_unary_op(token*, node*);
 node* new_node_number(token*);
 node* new_node_assign(node*, token*, node*);
 node* new_node_variable(token*);
-node* new_node_compound();
+node* new_node_compound(vec*);
 node* new_node_empty();
 void delete_node(node*);
 
