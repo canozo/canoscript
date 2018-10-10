@@ -1,4 +1,5 @@
 #include "vec.h"
+#include <stdio.h>
 
 vec* new_vec(size_t data_size) {
     vec* this = malloc(sizeof(*this));
@@ -12,6 +13,8 @@ vec* new_vec(size_t data_size) {
 }
 
 void delete_vec(vec* this) {
+    printf("DEBUG vector pointer: %p\n", this);
+    // TODO error here
     free(this->data);
     free(this);
 }

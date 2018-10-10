@@ -1,13 +1,12 @@
 #ifndef MAP_H
 #define MAP_H
 
-#include <stdlib.h>
 #include "bucket.h"
 
 typedef struct map {
     // 256 variables max
     bucket* buckets[256];
-    unsigned int size;
+    int size;
     int error;
 } map;
 

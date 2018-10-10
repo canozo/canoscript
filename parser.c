@@ -16,7 +16,10 @@ const parser parser_init = {
         "T_UNKNOWN",
         "T_ASSIGN",
         "T_KEYWORD",
-        "T_VARIABLE"
+        "T_VARIABLE",
+        "T_SEMICOLON",
+        "T_BEGIN",
+        "T_END"
     }
 };
 
@@ -54,8 +57,9 @@ void delete_parser(parser* this) {
         delete_token(vec_get(this->token_references, i));
     }
 
-    delete_vec(this->node_references);
-    delete_vec(this->token_references);
+    // TODO fix this
+    // delete_vec(this->node_references);
+    // delete_vec(this->token_references);
 
     delete_lexer(this->lexer);
     free(this);
@@ -224,7 +228,7 @@ node* statement(parser* this) {
 
     node* result;
 
-    if (this->current_token->type == T_ASSIGN) {
+    if (this->current_token->type == T_VARIABLE) {
         result = assignment_statement(this);
     } else {
         result = empty_statement(this);
@@ -233,25 +237,18 @@ node* statement(parser* this) {
     return result;
 }
 
-vec* statement_list(parser* this) {
-    // statement_list : statement
-    //                | statement SEMI statement_list
+node* compound_statement(parser* this) {
+    // compound_statement : statement
+    //                    | statement SEMI compound_statement
 
-    vec* results = new_vec(sizeof(node));
-    results = vec_push(results, statement(this));
+    vec* nodes = new_vec(sizeof(node));
+    nodes = vec_push(nodes, statement(this));
 
     while (this->current_token->type == T_SEMICOLON) {
         eat(this, T_SEMICOLON);
-        results = vec_push(results, statement(this));
+        nodes = vec_push(nodes, statement(this));
     }
 
-    return results;
-}
-
-node* compound_statement(parser* this) {
-    // compound_statement : statement_list
-
-    vec* nodes = statement_list(this);
     node* result = new_node_compound(nodes);
     add_node_reference(this, result);
 

@@ -39,7 +39,6 @@ node* variable(parser*);
 node* assignment_statement(parser*);
 node* empty_statement(parser*);
 node* statement(parser*);
-vec* statement_list(parser*);
 node* compound_statement(parser*);
 node* program(parser*);
 node* parse(parser*);

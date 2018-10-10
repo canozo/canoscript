@@ -23,21 +23,14 @@ int main(int argc, char **argv) {
 
 void run_program() {
     interpreter* interpreter;
-    char* input;
-    int result;
+    char* input = read_file("program.cs");
 
-    while (1) {
-        input = read_file("program.cs");
-
-        if (strlen(input) > 0) {
-            interpreter = new_interpreter(input);
-            result = interpret(interpreter);
-            if (!interpreter->error)
-                printf("%d\n", result);
-            delete_interpreter(interpreter);
-        }
-        free(input);
+    if (strlen(input) > 0) {
+        interpreter = new_interpreter(input);
+        interpret(interpreter);
+        delete_interpreter(interpreter);
     }
+    free(input);
 }
 
 void run_tests() {

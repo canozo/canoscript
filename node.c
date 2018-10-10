@@ -88,7 +88,7 @@ node* new_node_empty() {
 
 
 void delete_node(node* this) {
-    if (this->type = N_COMPOUND) {
+    if (this->type == N_COMPOUND) {
         delete_vec(this->children);
     }
     free(this);

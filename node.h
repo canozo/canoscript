@@ -7,7 +7,7 @@
 #define N_ASSIGN 3
 #define N_VARIABLE 4
 #define N_COMPOUND 5
-#define N_EMPTY 5
+#define N_EMPTY 6
 
 #include "token.h"
 #include "vec.h"

@@ -16,6 +16,7 @@ interpreter* new_interpreter(char* text) {
 
 void delete_interpreter(interpreter* this) {
     delete_parser(this->parser);
+    // TODO fix this
     delete_map(this->global_scope);
     free(this);
 }
@@ -85,25 +86,6 @@ int visit_number(interpreter* this, node* current_node) {
     return thing;
 }
 
-int interpret(interpreter* this) {
-    node* root = parse(this->parser);
-    this->error = this->parser->error;
-
-    if (this->error) {
-        print_errors(this);
-        return -42;
-    }
-
-    int result = visit(this, root);
-
-    if (this->error) {
-        print_errors(this);
-        return -42;
-    }
-
-    return result;
-}
-
 int visit_compound(interpreter* this, node* current_node) {
     for (int i = 0; i < current_node->children->size; i++) {
         visit(this, vec_get(current_node->children, i));
@@ -131,6 +113,34 @@ int visit_variable(interpreter* this, node* current_node) {
 
 int visit_empty(interpreter* this, node* current_node) {
     return 0;
+}
+
+int interpret(interpreter* this) {
+    // TODO change some of this functions to void, int is useless now
+    node* root = parse(this->parser);
+    this->error = this->parser->error;
+
+    if (this->error) {
+        print_errors(this);
+        return -42;
+    }
+
+    int result = visit(this, root);
+
+    if (this->error) {
+        print_errors(this);
+        return -42;
+    }
+
+    print_global_scope(this);
+
+    return result;
+}
+
+void print_global_scope(interpreter* this) {
+    if (this->print_mode) {
+        map_print(this->global_scope);
+    }
 }
 
 void print_errors(interpreter* this) {
