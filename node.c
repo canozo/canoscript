@@ -88,8 +88,7 @@ node* new_node_empty() {
 
 void delete_node(node* this) {
     if (this->type == N_COMPOUND) {
-        // TODO mem fix this
-        // delete_vec(this->children);
+        delete_vec(this->children);
     }
     free(this);
 }

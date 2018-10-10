@@ -64,6 +64,6 @@ int map_find(map* this, char* key) {
 
 void map_print(map* this) {
     for (int i = 0; i < this->size; i++) {
-        printf("key: %s, value: %d\n", this->buckets[i]->key, this->buckets[i]->value);
+        printf("var: %s, val: %d\n", this->buckets[i]->key, this->buckets[i]->value);
     }
 }

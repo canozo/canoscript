@@ -57,21 +57,20 @@ void delete_parser(parser* this) {
         delete_token(vec_get(this->token_references, i));
     }
 
-    // TODO mem fix this
-    // delete_vec(this->node_references);
-    // delete_vec(this->token_references);
+    delete_vec(this->node_references);
+    delete_vec(this->token_references);
 
     delete_lexer(this->lexer);
     free(this);
 }
 
 void add_node_reference(parser* this, node* node_ref) {
-    this->node_references = vec_push(this->node_references, node_ref);
+    vec_push(this->node_references, node_ref);
 }
 
 
 void add_token_reference(parser* this, token* token_ref) {
-    this->token_references = vec_push(this->token_references, token_ref);
+    vec_push(this->token_references, token_ref);
 }
 
 token* eat(parser* this, int type) {
@@ -242,11 +241,11 @@ node* compound_statement(parser* this) {
     //                    | statement SEMI compound_statement
 
     vec* nodes = new_vec();
-    nodes = vec_push(nodes, statement(this));
+    vec_push(nodes, statement(this));
 
     while (this->current_token->type == T_SEMICOLON) {
         eat(this, T_SEMICOLON);
-        nodes = vec_push(nodes, statement(this));
+        vec_push(nodes, statement(this));
     }
 
     node* result = new_node_compound(nodes);

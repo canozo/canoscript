@@ -16,8 +16,7 @@ interpreter* new_interpreter(char* text) {
 
 void delete_interpreter(interpreter* this) {
     delete_parser(this->parser);
-    // TODO mem fix this
-    // delete_map(this->global_scope);
+    delete_map(this->global_scope);
     free(this);
 }
 

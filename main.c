@@ -25,11 +25,9 @@ void run_program() {
     interpreter* interpreter;
     char* input = read_file("program.cs");
 
-    if (strlen(input) > 0) {
-        interpreter = new_interpreter(input);
-        interpret(interpreter);
-        delete_interpreter(interpreter);
-    }
+    interpreter = new_interpreter(input);
+    interpret(interpreter);
+    delete_interpreter(interpreter);
     free(input);
 }
 
