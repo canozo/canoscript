@@ -16,7 +16,6 @@ void delete_map(map* this) {
     for (int i = 0; i < this->size; i++) {
         delete_bucket(this->buckets[i]);
     }
-    // TODO error here
     free(this);
 }
 

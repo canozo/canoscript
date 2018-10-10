@@ -62,7 +62,6 @@ node* new_node_variable(token* token) {
 }
 
 node* new_node_compound(vec* children) {
-    // XXX passing children vec could bite me in the ass later
     node* this = malloc(sizeof(*this));
 
     this->type = N_COMPOUND;
@@ -89,7 +88,8 @@ node* new_node_empty() {
 
 void delete_node(node* this) {
     if (this->type == N_COMPOUND) {
-        delete_vec(this->children);
+        // TODO mem fix this
+        // delete_vec(this->children);
     }
     free(this);
 }

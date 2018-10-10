@@ -31,8 +31,8 @@ parser* new_parser(char* text) {
     this->error_count = 0;
     this->lexer = new_lexer(text);
     this->current_token = get_next_token(this->lexer);
-    this->node_references = new_vec(sizeof(node));
-    this->token_references = new_vec(sizeof(token));
+    this->node_references = new_vec();
+    this->token_references = new_vec();
 
     if (this->lexer->error) {
         this->error = ERROR_UNEXPECTED_TOKEN;
@@ -57,7 +57,7 @@ void delete_parser(parser* this) {
         delete_token(vec_get(this->token_references, i));
     }
 
-    // TODO fix this
+    // TODO mem fix this
     // delete_vec(this->node_references);
     // delete_vec(this->token_references);
 
@@ -241,7 +241,7 @@ node* compound_statement(parser* this) {
     // compound_statement : statement
     //                    | statement SEMI compound_statement
 
-    vec* nodes = new_vec(sizeof(node));
+    vec* nodes = new_vec();
     nodes = vec_push(nodes, statement(this));
 
     while (this->current_token->type == T_SEMICOLON) {
