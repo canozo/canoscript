@@ -7,10 +7,32 @@ bucket* new_bucket() {
 }
 
 void delete_bucket(bucket* this) {
+    if (this->type == B_STRING) {
+        free(this->string_value);
+    }
     free(this);
 }
 
-void bucket_set(bucket* this, char* key, int value) {
+void bucket_set_integer(bucket* this, char* key, int value) {
     this->key = key;
-    this->value = value;
+    this->type = B_INTEGER;
+    this->integer_value = value;
+    this->real_value = NULL;
+    this->string_value = NULL;
+}
+
+void bucket_set_real_num(bucket* this, char* key, float value) {
+    this->key = key;
+    this->type = B_REAL_NUM;
+    this->integer_value = NULL;
+    this->real_value = value;
+    this->string_value = NULL;
+}
+
+void bucket_set_string(bucket* this, char* key, char* value) {
+    this->key = key;
+    this->type = B_STRING;
+    this->integer_value = NULL;
+    this->real_value = NULL;
+    this->string_value = value;
 }

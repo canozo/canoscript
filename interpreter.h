@@ -4,6 +4,7 @@
 #include "node.h"
 #include "parser.h"
 #include "map.h"
+#include "bucket.h"
 
 typedef struct interpreter {
     parser* parser;
@@ -14,14 +15,15 @@ typedef struct interpreter {
 
 interpreter* new_interpreter(char*);
 void delete_interpreter(interpreter*);
-int visit(interpreter*, node*);
-int visit_binary_op(interpreter*, node*);
-int visit_unary_op(interpreter*, node*);
-int visit_number(interpreter*, node*);
-int visit_compound(interpreter*, node*);
-int visit_assign(interpreter*, node*);
-int visit_variable(interpreter*, node*);
-int visit_empty(interpreter*, node*);
+bucket* visit(interpreter*, node*);
+bucket* visit_binary_op(interpreter*, node*);
+bucket* visit_unary_op(interpreter*, node*);
+bucket* visit_number(interpreter*, node*);
+bucket* visit_real_number(interpreter*, node*);
+bucket* visit_compound(interpreter*, node*);
+bucket* visit_assign(interpreter*, node*);
+bucket* visit_variable(interpreter*, node*);
+bucket* visit_empty(interpreter*, node*);
 void interpret(interpreter*);
 void print_global_scope(interpreter*);
 void print_errors(interpreter*);

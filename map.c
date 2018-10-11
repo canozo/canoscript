@@ -19,16 +19,54 @@ void delete_map(map* this) {
     free(this);
 }
 
-void map_set(map* this, char* key, int value) {
+void map_set_integer(map* this, char* key, int value) {
     int pos = map_find(this, key);
     if (pos == -1) {
         // make a new bucket for it
         this->buckets[this->size] = new_bucket();
+
+    } else if (this->buckets[pos]->type == B_STRING) {
+        // if the last value on the bucket was a string, realloc it
+        delete_bucket(this->buckets[pos]);
+        this->buckets[this->size] = new_bucket();
     }
 
-    // change the bucket content
-    bucket* buck = this->buckets[this->size];
-    bucket_set(buck, key, value);
+    // change the bucket content depending on the type
+    bucket_set_integer(this->buckets[this->size], key, value);
+    this->size += 1;
+}
+
+void map_set_real_num(map* this, char* key, float value) {
+    int pos = map_find(this, key);
+    if (pos == -1) {
+        // make a new bucket for it
+        this->buckets[this->size] = new_bucket();
+
+    } else if (this->buckets[pos]->type == B_STRING) {
+        // if the last value on the bucket was a string, realloc it
+        delete_bucket(this->buckets[pos]);
+        this->buckets[this->size] = new_bucket();
+    }
+
+    // change the bucket content depending on the type
+    bucket_set_real_num(this->buckets[this->size], key, value);
+    this->size += 1;
+}
+
+void map_set_string(map* this, char* key, char* value) {
+    int pos = map_find(this, key);
+    if (pos == -1) {
+        // make a new bucket for it
+        this->buckets[this->size] = new_bucket();
+
+    } else if (this->buckets[pos]->type == B_STRING) {
+        // if the last value on the bucket was a string, realloc it
+        delete_bucket(this->buckets[pos]);
+        this->buckets[this->size] = new_bucket();
+    }
+
+    // change the bucket content depending on the type
+    bucket_set_string(this->buckets[this->size], key, value);
     this->size += 1;
 }
 
@@ -63,7 +101,16 @@ int map_find(map* this, char* key) {
 }
 
 void map_print(map* this) {
+    printf("GLOBAL SCOPE:\n");
     for (int i = 0; i < this->size; i++) {
-        printf("var: %s, val: %d\n", this->buckets[i]->key, this->buckets[i]->value);
+        if (this->buckets[i] == B_INTEGER) {
+            printf("var: %s, val: %d\n", this->buckets[i]->key, this->buckets[i]->integer_value);
+
+        } else if (this->buckets[i] == B_REAL_NUM) {
+            printf("var: %s, val: %.6f\n", this->buckets[i]->key, this->buckets[i]->real_value);
+
+        } else if (this->buckets[i] == B_STRING) {
+            printf("var: %s, val: \"%s\"\n", this->buckets[i]->key, this->buckets[i]->string_value);
+        }
     }
 }
