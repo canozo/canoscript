@@ -41,7 +41,7 @@ token* get_next_token(lexer* this) {
         }
 
         if (isdigit(this->current_char)) {
-            return new_token(T_INTEGER, get_integer_str(this));
+            return get_number_tok(this);
         }
 
         if (this->current_char == '+') {
@@ -59,9 +59,15 @@ token* get_next_token(lexer* this) {
             return new_token(T_MULTIPLY, "*");
         }
 
+        if (this->current_char == '/' && peek(this) == '~') {
+            advance(this);
+            advance(this);
+            return new_token(T_DIVIDE_FLOOR, "/~");
+        }
+
         if (this->current_char == '/') {
             advance(this);
-            return new_token(T_DIVIDE, "/");
+            return new_token(T_DIVIDE_REAL, "/");
         }
 
         if (this->current_char == '(') {
@@ -172,15 +178,34 @@ char* get_id_str(lexer* this) {
     return result;
 }
 
-char* get_integer_str(lexer* this) {
+token* get_number_tok(lexer* this) {
     char* result = NULL;
-    char temp[10];
+    char temp[20];
     size_t length = 0;
 
+    int real_number = 0;
+
+    // integer part
     while (this->current_char != '\0' && isdigit(this->current_char) && length < 10) {
         temp[length] = this->current_char;
         length += 1;
         advance(this);
+
+        if (this->current_char == '.') {
+            real_number = 1;
+            temp[length] = '.';
+            length += 1;
+            break;
+        }
+    }
+
+    // real part if there is
+    if (real_number) {
+        while (this->current_char != '\0' && isdigit(this->current_char) && length < 10) {
+            temp[length] = this->current_char;
+            length += 1;
+            advance(this);
+        }
     }
 
     // null char at the end
@@ -192,5 +217,9 @@ char* get_integer_str(lexer* this) {
     result[0] = '\0';
     strcat(result, temp);
 
-    return result;
+    if (real_number) {
+        return new_token(T_NUMBER_REAL, result);
+    } else {
+        return new_token(T_NUMBER_INT, result);
+    }
 }

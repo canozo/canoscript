@@ -26,10 +26,21 @@ node* new_node_unary_op(token* token, node* right) {
 }
 
 
-node* new_node_number(token* token) {
+node* new_node_integer(token* token) {
     node* this = malloc(sizeof(*this));
 
-    this->type = N_NUMBER;
+    this->type = N_INTEGER;
+    this->left = NULL;
+    this->token = token;
+    this->right = NULL;
+
+    return this;
+}
+
+node* new_node_real_number(token* token) {
+    node* this = malloc(sizeof(*this));
+
+    this->type = N_REAL_NUMBER;
     this->left = NULL;
     this->token = token;
     this->right = NULL;

@@ -1,13 +1,14 @@
 #ifndef NODE_H
 #define NODE_H
 
-#define N_NUMBER 0
-#define N_BINARY_OP 1
-#define N_UNARY_OP 2
-#define N_ASSIGN 3
-#define N_VARIABLE 4
-#define N_COMPOUND 5
-#define N_EMPTY 6
+#define N_INTEGER 0
+#define N_REAL_NUMBER 1
+#define N_BINARY_OP 2
+#define N_UNARY_OP 3
+#define N_ASSIGN 4
+#define N_VARIABLE 5
+#define N_COMPOUND 6
+#define N_EMPTY 7
 
 #include "token.h"
 #include "vec.h"
@@ -22,7 +23,8 @@ typedef struct node {
 
 node* new_node_binary_op(node*, token*, node*);
 node* new_node_unary_op(token*, node*);
-node* new_node_number(token*);
+node* new_node_integer(token*);
+node* new_node_real_number(token*);
 node* new_node_assign(node*, token*, node*);
 node* new_node_variable(token*);
 node* new_node_compound(vec*);

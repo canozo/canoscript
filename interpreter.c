@@ -22,8 +22,12 @@ void delete_interpreter(interpreter* this) {
 
 int visit(interpreter* this, node* current_node) {
     // according to the node type, we call the correct visit function
-    if (current_node->type == N_NUMBER) {
+    // TODO como manejar operaciones de numeros reales vs enteros
+    if (current_node->type == N_INTEGER) {
         return visit_number(this, current_node);
+
+    // } else if (current_node->type == N_REAL_NUMBER) {
+    //     return visit_real_number(this, current_node);
 
     } else if (current_node->type == N_BINARY_OP) {
         return visit_binary_op(this, current_node);
@@ -56,7 +60,8 @@ int visit_binary_op(interpreter* this, node* current_node) {
     } else if (current_node->token->type == T_MULTIPLY) {
         return visit(this, current_node->left) * visit(this, current_node->right);
 
-    } else if (current_node->token->type == T_DIVIDE) {
+    // TODO real division visit
+    } else if (current_node->token->type == T_DIVIDE_FLOOR) {
         divide_by = visit(this, current_node->right);
 
         if (divide_by == 0) {

@@ -55,11 +55,11 @@ void run_tests() {
     result = map_get(interpreter->global_scope, "c");
     assert(result == 1);
 
-    // 7 + 3 * (10 / (12 / (3 + 1) - 1)) = 22
+    // 7 + 3 * (10 /~ (12 /~ (3 + 1) - 1)) = 22
     result = map_get(interpreter->global_scope, "d");
     assert(result == 22);
 
-    // 7 + 3 * (10 / (12 / (3 + 1) - 1)) / (2 + 3) - 5 - 3 + (8) = 10
+    // 7 + 3 * (10 /~ (12 /~ (3 + 1) - 1)) /~ (2 + 3) - 5 - 3 + (8) = 10
     result = map_get(interpreter->global_scope, "e");
     assert(result == 10);
 
@@ -79,7 +79,7 @@ void run_tests() {
     free(input);
 
     // division by 0 error
-    interpreter = new_interpreter("a = 25 / (5 - 3 - 2);");
+    interpreter = new_interpreter("a = 25 /~ (5 - 3 - 2);");
     interpreter->print_mode = 0;
     assert(!interpreter->error);
     interpret(interpreter);

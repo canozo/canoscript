@@ -21,6 +21,6 @@ void advance(lexer*);
 token* get_next_token(lexer*);
 void skip_comment(lexer*);
 char* get_id_str(lexer*);
-char* get_integer_str(lexer*);
+token* get_number_tok(lexer*);
 
 #endif

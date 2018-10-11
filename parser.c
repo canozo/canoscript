@@ -6,20 +6,20 @@
 const parser parser_init = {
     .types = {
         "T_EOF",
-        "T_INTEGER",
+        "T_NUMBER_INT",
+        "T_NUMBER_REAL",
         "T_PLUS",
         "T_MINUS",
         "T_MULTIPLY",
-        "T_DIVIDE",
+        "T_DIVIDE_FLOOR",
+        "T_DIVIDE_REAL",
         "T_PARENTHESES_OPEN",
         "T_PARENTHESES_CLOSE",
         "T_UNKNOWN",
         "T_ASSIGN",
         "T_KEYWORD",
         "T_VARIABLE",
-        "T_SEMICOLON",
-        "T_BEGIN",
-        "T_END"
+        "T_SEMICOLON"
     }
 };
 
@@ -77,6 +77,7 @@ token* eat(parser* this, int type) {
     token* eaten = NULL;
 
     if (this->current_token != NULL && this->current_token->type == type) {
+        // printf("DEBUG eating %s\n", this->types[type]);
         eaten = this->current_token;
         this->current_token = get_next_token(this->lexer);
         add_token_reference(this, this->current_token);
@@ -101,14 +102,20 @@ token* eat(parser* this, int type) {
 }
 
 node* number_term(parser* this) {
-    // number: T_INTEGER
+    // number: T_NUMBER_INT
+    //       | T_NUMBER_REAL
 
     node* result = NULL;
-    token* term = this->current_token;
-    eat(this, T_INTEGER);
+    token* eaten;
 
-    if (!this->error) {
-        result = new_node_number(term);
+    if (this->current_token->type == T_NUMBER_INT) {
+        eaten = eat(this, T_NUMBER_INT);
+        result = new_node_integer(eaten);
+        add_node_reference(this, result);
+
+    } else {
+        eaten = eat(this, T_NUMBER_REAL);
+        result = new_node_real_number(eaten);
         add_node_reference(this, result);
     }
 
@@ -119,7 +126,8 @@ node* math_parentheses(parser* this) {
     // math_parentheses : T_PLUS math_parentheses
     //                  | T_MINUS math_parentheses
     //                  | T_PARENTHESES_OPEN math T_PARENTHESES_OPEN
-    //                  | T_INTEGER
+    //                  | T_NUMBER_INT
+    //                  | T_NUMBER_REAL
     //                  | variable
 
     node* result;
@@ -128,15 +136,19 @@ node* math_parentheses(parser* this) {
     if (this->current_token->type == T_PLUS) {
         eaten = eat(this, T_PLUS);
         result = new_node_unary_op(eaten, math_parentheses(this));
+
     } else if (this->current_token->type == T_MINUS) {
         eaten = eat(this, T_MINUS);
         result = new_node_unary_op(eaten, math_parentheses(this));
+
     } else if (this->current_token->type == T_PARENTHESES_OPEN) {
         eat(this, T_PARENTHESES_OPEN);
         result = math(this);
         eat(this, T_PARENTHESES_CLOSE);
-    } else if (this->current_token->type == T_INTEGER) {
+
+    } else if (this->current_token->type == T_NUMBER_INT || this->current_token->type == T_NUMBER_REAL) {
         result = number_term(this);
+
     } else {
         result = variable(this);
     }
@@ -145,16 +157,18 @@ node* math_parentheses(parser* this) {
 }
 
 node* math_multiply_divide(parser* this) {
-    // math_multiply_divide : math_parentheses ((T_MULTIPLY | T_DIVIDE) math_parentheses)*
+    // math_multiply_divide : math_parentheses ((T_MULTIPLY | T_DIVIDE_FLOOR | T_DIVIDE_REAL) math_parentheses)*
 
     node* result = math_parentheses(this);
     token* eaten;
 
-    while (this->current_token->type == T_MULTIPLY || this->current_token->type == T_DIVIDE) {
+    while (this->current_token->type == T_MULTIPLY || this->current_token->type == T_DIVIDE_FLOOR || this->current_token->type == T_DIVIDE_REAL) {
         if (this->current_token->type == T_MULTIPLY) {
             eaten = eat(this, T_MULTIPLY);
+        } else if (this->current_token->type == T_DIVIDE_FLOOR) {
+            eaten = eat(this, T_DIVIDE_FLOOR);
         } else {
-            eaten = eat(this, T_DIVIDE);
+            eaten = eat(this, T_DIVIDE_REAL);
         }
 
         result = new_node_binary_op(result, eaten, math_parentheses(this));
