@@ -19,6 +19,7 @@ char peek(lexer*);
 int iskeyword(lexer*, char*);
 void advance(lexer*);
 token* get_next_token(lexer*);
+void skip_comment(lexer*);
 char* get_id_str(lexer*);
 char* get_integer_str(lexer*);
 

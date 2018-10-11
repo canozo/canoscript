@@ -216,6 +216,7 @@ node* assignment_statement(parser* this) {
 
 node* empty_statement(parser* this) {
     // empty_statement :
+
     node* result = new_node_empty();
     add_node_reference(this, result);
     return result;

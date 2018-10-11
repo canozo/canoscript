@@ -114,26 +114,21 @@ int visit_empty(interpreter* this, node* current_node) {
     return 0;
 }
 
-int interpret(interpreter* this) {
-    // TODO change some of this functions to void, int is useless now
+void interpret(interpreter* this) {
     node* root = parse(this->parser);
     this->error = this->parser->error;
 
     if (this->error) {
         print_errors(this);
-        return -42;
     }
 
     int result = visit(this, root);
 
     if (this->error) {
         print_errors(this);
-        return -42;
     }
 
     print_global_scope(this);
-
-    return result;
 }
 
 void print_global_scope(interpreter* this) {

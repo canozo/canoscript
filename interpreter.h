@@ -22,7 +22,7 @@ int visit_compound(interpreter*, node*);
 int visit_assign(interpreter*, node*);
 int visit_variable(interpreter*, node*);
 int visit_empty(interpreter*, node*);
-int interpret(interpreter*);
+void interpret(interpreter*);
 void print_global_scope(interpreter*);
 void print_errors(interpreter*);
 int strtoint(char*);

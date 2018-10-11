@@ -35,6 +35,11 @@ token* get_next_token(lexer* this) {
             continue;
         }
 
+        if (this->current_char == '/' && peek(this) == '/') {
+            skip_comment(this);
+            continue;
+        }
+
         if (isdigit(this->current_char)) {
             return new_token(T_INTEGER, get_integer_str(this));
         }
@@ -130,6 +135,17 @@ void advance(lexer* this) {
         this->current_char = '\0';
     } else {
         this->current_char = this->text[this->pos];
+    }
+}
+
+void skip_comment(lexer* this) {
+    char last;
+    while (this->current_char != '\0') {
+        last = this->current_char;
+        advance(this);
+        if (last == '\n') {
+            break;
+        }
     }
 }
 
