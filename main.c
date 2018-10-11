@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
 
 void run_program() {
     interpreter* interpreter;
-    char* input = read_file("program.cs");
+    char* input = read_file("programs/program1.cs");
 
     interpreter = new_interpreter(input);
     interpret(interpreter);
