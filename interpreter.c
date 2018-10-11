@@ -138,6 +138,7 @@ int interpret(interpreter* this) {
 
 void print_global_scope(interpreter* this) {
     if (this->print_mode) {
+        printf("GLOBAL SCOPE:\n");
         map_print(this->global_scope);
     }
 }

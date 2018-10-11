@@ -4,7 +4,7 @@ main.out: main.o token.o lexer.o interpreter.o node.o parser.o vec.o map.o bucke
 	rm *.o
 
 # main
-main.o: main.c interpreter.h
+main.o: main.c interpreter.h map.h
 	gcc -c main.c
 
 # token
