@@ -134,9 +134,9 @@ bucket* visit_number(interpreter* this, node* current_node) {
     add_bucket_reference(this, result);
 
     if (current_node->type == N_REAL_NUMBER) {
-        bucket_set_real_num(result, NULL, strtoint(current_node->token->value));
+        bucket_set_real_num(result, NULL, strtofloat(current_node->token->value));
     } else {
-        bucket_set_integer(result, NULL, strtofloat(current_node->token->value));
+        bucket_set_integer(result, NULL, strtoint(current_node->token->value));
     }
 
     return result;

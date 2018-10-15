@@ -3,6 +3,8 @@
 #include <ctype.h>
 #include "lexer.h"
 
+#include <stdio.h>
+
 const lexer lexer_init = {
     .keywords = {
         "begin",
@@ -190,13 +192,14 @@ token* get_number_tok(lexer* this) {
         temp[length] = this->current_char;
         length += 1;
         advance(this);
+    }
 
-        if (this->current_char == '.') {
-            real_number = 1;
-            temp[length] = '.';
-            length += 1;
-            break;
-        }
+    // if it's a real number
+    if (this->current_char == '.') {
+        real_number = 1;
+        temp[length] = '.';
+        length += 1;
+        advance(this);
     }
 
     // real part if there is
