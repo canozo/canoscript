@@ -3,8 +3,6 @@
 #include <ctype.h>
 #include "lexer.h"
 
-#include <stdio.h>
-
 const lexer lexer_init = {
     .keywords = {
         "begin",
