@@ -32,8 +32,12 @@ void map_set_integer(map* this, char* key, int value) {
     }
 
     // change the bucket content depending on the type
-    bucket_set_integer(this->buckets[this->size], key, value);
-    this->size += 1;
+    if (pos == -1) {
+        bucket_set_integer(this->buckets[this->size], key, value);
+        this->size += 1;
+    } else {
+        bucket_set_integer(this->buckets[pos], key, value);
+    }
 }
 
 void map_set_real_num(map* this, char* key, float value) {
@@ -49,8 +53,12 @@ void map_set_real_num(map* this, char* key, float value) {
     }
 
     // change the bucket content depending on the type
-    bucket_set_real_num(this->buckets[this->size], key, value);
-    this->size += 1;
+    if (pos == -1) {
+        bucket_set_real_num(this->buckets[this->size], key, value);
+        this->size += 1;
+    } else {
+        bucket_set_real_num(this->buckets[pos], key, value);
+    }
 }
 
 void map_set_string(map* this, char* key, char* value) {
@@ -66,8 +74,12 @@ void map_set_string(map* this, char* key, char* value) {
     }
 
     // change the bucket content depending on the type
-    bucket_set_string(this->buckets[this->size], key, value);
-    this->size += 1;
+    if (pos == -1) {
+        bucket_set_string(this->buckets[this->size], key, value);
+        this->size += 1;
+    } else {
+        bucket_set_string(this->buckets[pos], key, value);
+    }
 }
 
 void map_remove(map* this, char* key) {

@@ -117,6 +117,10 @@ bucket* visit_binary_op(interpreter* this, node* current_node) {
 bucket* visit_unary_op(interpreter* this, node* current_node) {
     bucket* result = visit(this, current_node->right);
 
+    if (this->error) {
+        return NULL;
+    }
+
     if (current_node->token->type == T_MINUS) {
         result->integer_value = -result->integer_value;
         result->real_value = -result->real_value;
