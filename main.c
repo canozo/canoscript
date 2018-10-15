@@ -37,7 +37,9 @@ void run_tests() {
 
     char* input = read_file("tests/test_math.cs");
     interpreter* interpreter = new_interpreter(input);
-    int result;
+    bucket* result;
+    int int_result;
+    float float_result;
 
     interpreter->print_mode = 0;
     assert(!interpreter->error);
@@ -45,35 +47,43 @@ void run_tests() {
 
     // 5 = 5
     result = map_get(interpreter->global_scope, "a");
-    assert(result == 5);
+    int_result = result->integer_value;
+    assert(int_result == 5);
 
     // (5) = 5
     result = map_get(interpreter->global_scope, "b");
-    assert(result == 5);
+    int_result = result->integer_value;
+    assert(int_result == 5);
 
     // 3 / 2 = 1
     result = map_get(interpreter->global_scope, "c");
-    assert(result == 1);
+    int_result = result->integer_value;
+    assert(int_result == 1);
 
     // 7 + 3 * (10 /~ (12 /~ (3 + 1) - 1)) = 22
     result = map_get(interpreter->global_scope, "d");
-    assert(result == 22);
+    int_result = result->integer_value;
+    assert(int_result == 22);
 
     // 7 + 3 * (10 /~ (12 /~ (3 + 1) - 1)) /~ (2 + 3) - 5 - 3 + (8) = 10
     result = map_get(interpreter->global_scope, "e");
-    assert(result == 10);
+    int_result = result->integer_value;
+    assert(int_result == 10);
 
     // 7 + (((3 + 2))) = 12
     result = map_get(interpreter->global_scope, "f");
-    assert(result == 12);
+    int_result = result->integer_value;
+    assert(int_result == 12);
 
     // -(2) = -2
     result = map_get(interpreter->global_scope, "g");
-    assert(result == -2);
+    int_result = result->integer_value;
+    assert(int_result == -2);
 
     // -+-2 = 2
     result = map_get(interpreter->global_scope, "h");
-    assert(result == 2);
+    int_result = result->integer_value;
+    assert(int_result == 2);
 
     delete_interpreter(interpreter);
     free(input);

@@ -17,14 +17,14 @@ void bucket_set_integer(bucket* this, char* key, int value) {
     this->key = key;
     this->type = B_INTEGER;
     this->integer_value = value;
-    this->real_value = NULL;
+    this->real_value = 0;
     this->string_value = NULL;
 }
 
 void bucket_set_real_num(bucket* this, char* key, float value) {
     this->key = key;
     this->type = B_REAL_NUM;
-    this->integer_value = NULL;
+    this->integer_value = 0;
     this->real_value = value;
     this->string_value = NULL;
 }
@@ -32,7 +32,7 @@ void bucket_set_real_num(bucket* this, char* key, float value) {
 void bucket_set_string(bucket* this, char* key, char* value) {
     this->key = key;
     this->type = B_STRING;
-    this->integer_value = NULL;
-    this->real_value = NULL;
+    this->integer_value = 0;
+    this->real_value = 0;
     this->string_value = value;
 }

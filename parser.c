@@ -136,10 +136,12 @@ node* math_parentheses(parser* this) {
     if (this->current_token->type == T_PLUS) {
         eaten = eat(this, T_PLUS);
         result = new_node_unary_op(eaten, math_parentheses(this));
+        add_node_reference(this, result);
 
     } else if (this->current_token->type == T_MINUS) {
         eaten = eat(this, T_MINUS);
         result = new_node_unary_op(eaten, math_parentheses(this));
+        add_node_reference(this, result);
 
     } else if (this->current_token->type == T_PARENTHESES_OPEN) {
         eat(this, T_PARENTHESES_OPEN);

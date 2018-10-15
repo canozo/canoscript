@@ -10,23 +10,30 @@ interpreter* new_interpreter(char* text) {
     this->print_mode = 1;
     this->parser = new_parser(text);
     this->global_scope = new_map();
+    this->bucket_references = new_vec();
 
     return this;
 }
 
 void delete_interpreter(interpreter* this) {
+    // delete bucket references
+    for (unsigned int i = 0; i < this->bucket_references->size; i++) {
+        delete_bucket(vec_get(this->bucket_references, i));
+    }
+
     delete_parser(this->parser);
     delete_map(this->global_scope);
     free(this);
 }
 
+void add_bucket_reference(interpreter* this, bucket* bucket) {
+    vec_push(this->bucket_references, bucket);
+}
+
 bucket* visit(interpreter* this, node* current_node) {
     // according to the node type, we call the correct visit function
-    if (current_node->type == N_INTEGER) {
+    if (current_node->type == N_INTEGER || current_node->type == N_REAL_NUMBER) {
         return visit_number(this, current_node);
-
-    } else if (current_node->type == N_REAL_NUMBER) {
-        return visit_real_number(this, current_node);
 
     } else if (current_node->type == N_BINARY_OP) {
         return visit_binary_op(this, current_node);
@@ -35,102 +42,135 @@ bucket* visit(interpreter* this, node* current_node) {
         return visit_unary_op(this, current_node);
 
     } else if (current_node->type == N_ASSIGN) {
-        return visit_assign(this, current_node);
+        visit_assign(this, current_node);
 
     } else if (current_node->type == N_VARIABLE) {
         return visit_variable(this, current_node);
 
     } else if (current_node->type == N_COMPOUND) {
-        return visit_compound(this, current_node);
+        visit_compound(this, current_node);
 
     } else if (current_node->type == N_EMPTY) {
-        return visit_empty(this, current_node);
+        visit_empty(this, current_node);
     }
 }
 
 bucket* visit_binary_op(interpreter* this, node* current_node) {
-    // TODO all operations that were with integers are now with buckets
-    // so now instead of returning a number we should return a new bucket
-    // maybe we should manage all the new buckets here instead of in the map
-    // that way we could also hold reference to every new bucket made
-    // but that sounds like a bad idea
-    // SO: we could also use buckets only for the purpose of sending data throug
-    // the functions without actually implementing them inside the map
+    bucket* left = visit(this, current_node->left);
+    bucket* right = visit(this, current_node->right);
+
+    if (this->error) {
+        return NULL;
+    }
+
+    bucket* result = new_bucket();
+    add_bucket_reference(this, result);
+
+    int real_mode = left->type == B_REAL_NUM || right->type == B_REAL_NUM;
+
+    float left_value = left->type == B_REAL_NUM ? left->real_value : left->integer_value;
+    float right_value = right->type == B_REAL_NUM ? right->real_value : right->integer_value;
+
     if (current_node->token->type == T_PLUS) {
-        return visit(this, current_node->left) + visit(this, current_node->right);
+        if (real_mode) {
+            bucket_set_real_num(result, NULL, left_value + right_value);
+        } else {
+            bucket_set_integer(result, NULL, left_value + right_value);
+        }
 
     } else if (current_node->token->type == T_MINUS) {
-        return visit(this, current_node->left) - visit(this, current_node->right);
+        if (real_mode) {
+            bucket_set_real_num(result, NULL, left_value - right_value);
+        } else {
+            bucket_set_integer(result, NULL, left_value - right_value);
+        }
 
     } else if (current_node->token->type == T_MULTIPLY) {
-        return visit(this, current_node->left) * visit(this, current_node->right);
+        if (real_mode) {
+            bucket_set_real_num(result, NULL, left_value * right_value);
+        } else {
+            bucket_set_integer(result, NULL, left_value * right_value);
+        }
 
     } else if (current_node->token->type == T_DIVIDE_FLOOR) {
-        int divide_by = visit(this, current_node->right);
-        if (divide_by == 0) {
+        if (right_value == 0) {
             this->error = ERROR_DIVIDE_BY_ZERO;
             sprintf(this->parser->error_messages[this->parser->error_count], "error code %d: division by 0\n", this->error);
             this->parser->error_count += 1;
-            return -42;
         } else {
-            return visit(this, current_node->left) / divide_by;
+            bucket_set_integer(result, NULL, left_value / right_value);
         }
 
     } else if (current_node->token->type == T_DIVIDE_REAL) {
-        float divide_by = visit(this, current_node->right);
-        if (divide_by == 0.0) {
+        if (right_value == 0) {
             this->error = ERROR_DIVIDE_BY_ZERO;
             sprintf(this->parser->error_messages[this->parser->error_count], "error code %d: division by 0\n", this->error);
             this->parser->error_count += 1;
-            return -42;
         } else {
-            return visit(this, current_node->left) / divide_by;
+            bucket_set_real_num(result, NULL, left_value / right_value);
         }
     }
+    
+    return result;
 }
 
 bucket* visit_unary_op(interpreter* this, node* current_node) {
-    if (current_node->token->type == T_PLUS) {
-        return +visit(this, current_node->right);
+    bucket* result = visit(this, current_node->right);
 
-    } else if (current_node->token->type == T_MINUS) {
-        return -visit(this, current_node->right);
+    if (current_node->token->type == T_MINUS) {
+        result->integer_value = -result->integer_value;
+        result->real_value = -result->real_value;
     }
+
+    return result;
 }
 
 bucket* visit_number(interpreter* this, node* current_node) {
-    // if it visits a number, return the value
-    int thing = strtoint(current_node->token->value);
-    return thing;
+    bucket* result = new_bucket();
+    add_bucket_reference(this, result);
+
+    if (current_node->type == N_REAL_NUMBER) {
+        bucket_set_real_num(result, NULL, strtoint(current_node->token->value));
+    } else {
+        bucket_set_integer(result, NULL, strtofloat(current_node->token->value));
+    }
+
+    return result;
 }
 
-bucket* visit_compound(interpreter* this, node* current_node) {
+void visit_compound(interpreter* this, node* current_node) {
     for (int i = 0; i < current_node->children->size; i++) {
         visit(this, vec_get(current_node->children, i));
     }
 }
 
-bucket* visit_assign(interpreter* this, node* current_node) {
-    char* key = current_node->left->token->value;
-    map_set(this->global_scope, key, visit(this, current_node->right));
-}
+void visit_assign(interpreter* this, node* current_node) {
+    bucket* right = visit(this, current_node->right);
 
-bucket* visit_variable(interpreter* this, node* current_node) {
-    char* key = current_node->token->value;
-    int value = map_get(this->global_scope, key);
+    if (!this->error) {
+        char* key = current_node->left->token->value;
 
-    if (this->global_scope->error) {
-        this->error = ERROR_VARIABLE_NOT_DEF;
-        sprintf(this->parser->error_messages[this->parser->error_count], "error code %d: variable %s has not been defined\n", this->error, key);
-        this->parser->error_count += 1;
-        return -42;
-    } else {
-        return value;
+        if (right->type == B_REAL_NUM) {
+            map_set_real_num(this->global_scope, key, right->real_value);
+        } else {
+            map_set_integer(this->global_scope, key, right->integer_value);
+        }
     }
 }
 
-bucket* visit_empty(interpreter* this, node* current_node) {
-    return 0;
+bucket* visit_variable(interpreter* this, node* current_node) {
+    bucket* result = map_get(this->global_scope, current_node->token->value);
+
+    if (this->global_scope->error) {
+        this->error = ERROR_VARIABLE_NOT_DEF;
+        sprintf(this->parser->error_messages[this->parser->error_count], "error code %d: variable %s has not been defined\n", this->error, current_node->token->value);
+        this->parser->error_count += 1;
+    }
+
+    return result;
+}
+
+void visit_empty(interpreter* this, node* current_node) {
 }
 
 void interpret(interpreter* this) {
@@ -141,7 +181,7 @@ void interpret(interpreter* this) {
         print_errors(this);
     }
 
-    int result = visit(this, root);
+    visit(this, root);
 
     if (this->error) {
         print_errors(this);
@@ -166,4 +206,8 @@ void print_errors(interpreter* this) {
 
 int strtoint(char* string) {
     return (int)strtol(string, NULL, 10);
+}
+
+float strtofloat(char* string) {
+    return strtof(string, NULL);
 }

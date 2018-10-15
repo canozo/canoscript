@@ -16,7 +16,7 @@ lexer.o: lexer.c lexer.h token.h
 	gcc -c lexer.c
 
 # interpreter
-interpreter.o: interpreter.c interpreter.h node.h parser.h token.h map.h bucket.h
+interpreter.o: interpreter.c interpreter.h node.h parser.h token.h map.h bucket.h vec.h
 	gcc -c interpreter.c
 
 # node

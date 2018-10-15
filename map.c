@@ -80,15 +80,15 @@ void map_remove(map* this, char* key) {
     }
 }
 
-int map_get(map* this, char* key) {
+bucket* map_get(map* this, char* key) {
     int pos = map_find(this, key);
     if (pos == -1) {
         // error because key doesn't exist
         this->error = 1;
-        return -42;
+        return NULL;
     }
 
-    return this->buckets[pos]->value;
+    return this->buckets[pos];
 }
 
 int map_find(map* this, char* key) {
@@ -103,13 +103,13 @@ int map_find(map* this, char* key) {
 void map_print(map* this) {
     printf("GLOBAL SCOPE:\n");
     for (int i = 0; i < this->size; i++) {
-        if (this->buckets[i] == B_INTEGER) {
+        if (this->buckets[i]->type == B_INTEGER) {
             printf("var: %s, val: %d\n", this->buckets[i]->key, this->buckets[i]->integer_value);
 
-        } else if (this->buckets[i] == B_REAL_NUM) {
+        } else if (this->buckets[i]->type == B_REAL_NUM) {
             printf("var: %s, val: %.6f\n", this->buckets[i]->key, this->buckets[i]->real_value);
 
-        } else if (this->buckets[i] == B_STRING) {
+        } else if (this->buckets[i]->type == B_STRING) {
             printf("var: %s, val: \"%s\"\n", this->buckets[i]->key, this->buckets[i]->string_value);
         }
     }
