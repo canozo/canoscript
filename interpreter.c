@@ -179,15 +179,17 @@ void interpret(interpreter* this) {
 
     if (this->error) {
         print_errors(this);
+    } else {
+        // no errors parsing
+        visit(this, root);
+
+        if (this->error) {
+            print_errors(this);
+        } else {
+            // no errors interpreting
+            print_global_scope(this);
+        }
     }
-
-    visit(this, root);
-
-    if (this->error) {
-        print_errors(this);
-    }
-
-    print_global_scope(this);
 }
 
 void print_global_scope(interpreter* this) {
