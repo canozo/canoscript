@@ -40,7 +40,7 @@ void map_set_integer(map* this, char* key, int value) {
     }
 }
 
-void map_set_real_num(map* this, char* key, float value) {
+void map_set_float(map* this, char* key, float value) {
     int pos = map_find(this, key);
     if (pos == -1) {
         // make a new bucket for it
@@ -54,10 +54,10 @@ void map_set_real_num(map* this, char* key, float value) {
 
     // change the bucket content depending on the type
     if (pos == -1) {
-        bucket_set_real_num(this->buckets[this->size], key, value);
+        bucket_set_float(this->buckets[this->size], key, value);
         this->size += 1;
     } else {
-        bucket_set_real_num(this->buckets[pos], key, value);
+        bucket_set_float(this->buckets[pos], key, value);
     }
 }
 
@@ -113,16 +113,15 @@ int map_find(map* this, char* key) {
 }
 
 void map_print(map* this) {
-    printf("GLOBAL SCOPE:\n");
     for (int i = 0; i < this->size; i++) {
         if (this->buckets[i]->type == B_INTEGER) {
-            printf("var: %s, val: %d\n", this->buckets[i]->key, this->buckets[i]->integer_value);
+            printf("<integer: %s = %d>\n", this->buckets[i]->key, this->buckets[i]->integer_value);
 
-        } else if (this->buckets[i]->type == B_REAL_NUM) {
-            printf("var: %s, val: %.6f\n", this->buckets[i]->key, this->buckets[i]->real_value);
+        } else if (this->buckets[i]->type == B_FLOAT) {
+            printf("<float: %s = %.6f>\n", this->buckets[i]->key, this->buckets[i]->real_value);
 
         } else if (this->buckets[i]->type == B_STRING) {
-            printf("var: %s, val: \"%s\"\n", this->buckets[i]->key, this->buckets[i]->string_value);
+            printf("<string: %s =\"%s\">\n", this->buckets[i]->key, this->buckets[i]->string_value);
         }
     }
 }

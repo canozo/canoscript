@@ -3,16 +3,8 @@
 #include <ctype.h>
 #include "lexer.h"
 
-const lexer lexer_init = {
-    .keywords = {
-        "begin",
-        "end"
-    }
-};
-
 lexer* new_lexer(char* text) {
     lexer* this = malloc(sizeof(*this));
-    memcpy(this, &lexer_init, sizeof(*this));
 
     this->error = 0;
     this->pos = 0;
@@ -183,7 +175,7 @@ token* get_number_tok(lexer* this) {
     char temp[20];
     size_t length = 0;
 
-    int real_number = 0;
+    int is_float = 0;
 
     // integer part
     while (this->current_char != '\0' && isdigit(this->current_char) && length < 10) {
@@ -194,14 +186,14 @@ token* get_number_tok(lexer* this) {
 
     // if it's a real number
     if (this->current_char == '.') {
-        real_number = 1;
+        is_float = 1;
         temp[length] = '.';
         length += 1;
         advance(this);
     }
 
     // real part if there is
-    if (real_number) {
+    if (is_float) {
         while (this->current_char != '\0' && isdigit(this->current_char) && length < 10) {
             temp[length] = this->current_char;
             length += 1;
@@ -218,7 +210,7 @@ token* get_number_tok(lexer* this) {
     result[0] = '\0';
     strcat(result, temp);
 
-    if (real_number) {
+    if (is_float) {
         return new_token(T_NUMBER_REAL, result);
     } else {
         return new_token(T_NUMBER_INT, result);

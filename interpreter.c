@@ -6,7 +6,7 @@
 interpreter* new_interpreter(char* text) {
     interpreter* this = malloc(sizeof(*this));
 
-    this->error = 0;
+    this->error = NO_ERROR;
     this->print_mode = 1;
     this->parser = new_parser(text);
     this->global_scope = new_map();
@@ -32,7 +32,7 @@ void add_bucket_reference(interpreter* this, bucket* bucket) {
 
 bucket* visit(interpreter* this, node* current_node) {
     // according to the node type, we call the correct visit function
-    if (current_node->type == N_INTEGER || current_node->type == N_REAL_NUMBER) {
+    if (current_node->type == N_INTEGER || current_node->type == N_FLOAT) {
         return visit_number(this, current_node);
 
     } else if (current_node->type == N_BINARY_OP) {
@@ -66,28 +66,28 @@ bucket* visit_binary_op(interpreter* this, node* current_node) {
     bucket* result = new_bucket();
     add_bucket_reference(this, result);
 
-    int real_mode = left->type == B_REAL_NUM || right->type == B_REAL_NUM;
+    int real_mode = left->type == B_FLOAT || right->type == B_FLOAT;
 
-    float left_value = left->type == B_REAL_NUM ? left->real_value : left->integer_value;
-    float right_value = right->type == B_REAL_NUM ? right->real_value : right->integer_value;
+    float left_value = left->type == B_FLOAT ? left->real_value : left->integer_value;
+    float right_value = right->type == B_FLOAT ? right->real_value : right->integer_value;
 
     if (current_node->token->type == T_PLUS) {
         if (real_mode) {
-            bucket_set_real_num(result, NULL, left_value + right_value);
+            bucket_set_float(result, NULL, left_value + right_value);
         } else {
             bucket_set_integer(result, NULL, left_value + right_value);
         }
 
     } else if (current_node->token->type == T_MINUS) {
         if (real_mode) {
-            bucket_set_real_num(result, NULL, left_value - right_value);
+            bucket_set_float(result, NULL, left_value - right_value);
         } else {
             bucket_set_integer(result, NULL, left_value - right_value);
         }
 
     } else if (current_node->token->type == T_MULTIPLY) {
         if (real_mode) {
-            bucket_set_real_num(result, NULL, left_value * right_value);
+            bucket_set_float(result, NULL, left_value * right_value);
         } else {
             bucket_set_integer(result, NULL, left_value * right_value);
         }
@@ -107,7 +107,7 @@ bucket* visit_binary_op(interpreter* this, node* current_node) {
             sprintf(this->parser->error_messages[this->parser->error_count], "error code %d: division by 0\n", this->error);
             this->parser->error_count += 1;
         } else {
-            bucket_set_real_num(result, NULL, left_value / right_value);
+            bucket_set_float(result, NULL, left_value / right_value);
         }
     }
     
@@ -133,8 +133,8 @@ bucket* visit_number(interpreter* this, node* current_node) {
     bucket* result = new_bucket();
     add_bucket_reference(this, result);
 
-    if (current_node->type == N_REAL_NUMBER) {
-        bucket_set_real_num(result, NULL, strtofloat(current_node->token->value));
+    if (current_node->type == N_FLOAT) {
+        bucket_set_float(result, NULL, strtofloat(current_node->token->value));
     } else {
         bucket_set_integer(result, NULL, strtoint(current_node->token->value));
     }
@@ -154,8 +154,8 @@ void visit_assign(interpreter* this, node* current_node) {
     if (!this->error) {
         char* key = current_node->left->token->value;
 
-        if (right->type == B_REAL_NUM) {
-            map_set_real_num(this->global_scope, key, right->real_value);
+        if (right->type == B_FLOAT) {
+            map_set_float(this->global_scope, key, right->real_value);
         } else {
             map_set_integer(this->global_scope, key, right->integer_value);
         }
@@ -198,6 +198,7 @@ void interpret(interpreter* this) {
 
 void print_global_scope(interpreter* this) {
     if (this->print_mode) {
+        printf("GLOBAL SCOPE:\n");
         map_print(this->global_scope);
     }
 }

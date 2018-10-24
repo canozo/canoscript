@@ -37,10 +37,10 @@ node* new_node_integer(token* token) {
     return this;
 }
 
-node* new_node_real_number(token* token) {
+node* new_node_float(token* token) {
     node* this = malloc(sizeof(*this));
 
-    this->type = N_REAL_NUMBER;
+    this->type = N_FLOAT;
     this->left = NULL;
     this->token = token;
     this->right = NULL;

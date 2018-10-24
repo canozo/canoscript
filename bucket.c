@@ -21,9 +21,9 @@ void bucket_set_integer(bucket* this, char* key, int value) {
     this->string_value = NULL;
 }
 
-void bucket_set_real_num(bucket* this, char* key, float value) {
+void bucket_set_float(bucket* this, char* key, float value) {
     this->key = key;
-    this->type = B_REAL_NUM;
+    this->type = B_FLOAT;
     this->integer_value = 0;
     this->real_value = value;
     this->string_value = NULL;

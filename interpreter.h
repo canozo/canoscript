@@ -10,7 +10,7 @@
 typedef struct interpreter {
     parser* parser;
     int print_mode;
-    int error;
+    error_type error;
     map* global_scope;
     vec* bucket_references;
 } interpreter;

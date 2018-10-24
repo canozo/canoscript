@@ -3,9 +3,10 @@
 
 #include "bucket.h"
 
+#define MAX_VARIABLES 256
+
 typedef struct map {
-    // 256 variables max
-    bucket* buckets[256];
+    bucket* buckets[MAX_VARIABLES];
     int size;
     int error;
 } map;
@@ -13,7 +14,7 @@ typedef struct map {
 map* new_map();
 void delete_map(map*);
 void map_set_integer(map*, char*, int);
-void map_set_real_num(map*, char*, float);
+void map_set_float(map*, char*, float);
 void map_set_string(map*, char*, char*);
 void map_remove(map*, char*);
 bucket* map_get(map*, char*);

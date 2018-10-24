@@ -15,11 +15,11 @@ const parser parser_init = {
         "T_DIVIDE_REAL",
         "T_PARENTHESES_OPEN",
         "T_PARENTHESES_CLOSE",
-        "T_UNKNOWN",
         "T_ASSIGN",
         "T_KEYWORD",
         "T_VARIABLE",
-        "T_SEMICOLON"
+        "T_SEMICOLON",
+        "T_UNKNOWN"
     }
 };
 
@@ -115,7 +115,7 @@ node* number_term(parser* this) {
 
     } else {
         eaten = eat(this, T_NUMBER_REAL);
-        result = new_node_real_number(eaten);
+        result = new_node_float(eaten);
         add_node_reference(this, result);
     }
 

@@ -1,26 +1,32 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#define ERROR_NULL_TOKEN 1
-#define ERROR_UNEXPECTED_TYPE 2
-#define ERROR_UNEXPECTED_TOKEN 3
-#define ERROR_DIVIDE_BY_ZERO 4
-#define ERROR_VARIABLE_NOT_DEF 5
+typedef enum error_type {
+    NO_ERROR,
+    ERROR_NULL_TOKEN,
+    ERROR_UNEXPECTED_TYPE,
+    ERROR_UNEXPECTED_TOKEN,
+    ERROR_DIVIDE_BY_ZERO,
+    ERROR_VARIABLE_NOT_DEF
+} error_type;
 
 #include "token.h"
 #include "node.h"
 #include "lexer.h"
 #include "vec.h"
 
+#define MAX_TYPES 32
+#define MAX_MSGS 64
+#define MAX_CHARS 128
+
 typedef struct parser {
     token* current_token;
     lexer* lexer;
     vec* node_references;
     vec* token_references;
-    int error;
-    const char* types[32];
-    // 64 messages of 128 characters max:
-    char error_messages[64][128];
+    error_type error;
+    const char* types[T_ENUM_SIZE];
+    char error_messages[MAX_MSGS][MAX_CHARS];
     int error_count;
 } parser;
 
